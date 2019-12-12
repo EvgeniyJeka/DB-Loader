@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vertical Accordion</title>
+
+    <style>
+    
+    h3{
+      
+    width: 362px;
+    height: 20px;
+    background: silver;
+    cursor: pointer;
+  
+    margin: 0;
+    
+    }
+
+    span {
+    width: 20px;
+    height: 125px;
+}
+
+div {
+    width: 360px;
+    height: 170px;
+    display: none;
+    background-color: rgb(157, 201, 197);
+    border: 1px solid black;
+}
+    
+    
+    </style>
+   
+</head>
+<body>
+    <section id="accordion">
+        <h3 value="red"><span>Red</span></h3>
+        <div>Alfa Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+        <h3 value="green"><span>Green</span></h3>
+        <div>Beta Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+        <h3 value="blue"><span>Blue</span></h3>
+        <div>Gamma Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+
+    <script>
+
+    var $previous;
+      
+      const $headers=$("h3");
+      //Set h3 color by text(!)
+      $.each($headers,function(i,value){
+          console.log(i+" , "+$( this ).text() );
+          $(this).css("color",$( this ).text());
+      })
+
+      const $firstDiv=$("div:first");
+      $firstDiv.animate({height:"toggle"},2000);
+      $previous=$firstDiv;
+
+      $headers.click(expand);
+
+      function expand(){
+          const $v=$(this).next();
+     
+          $v.siblings("div:visible").animate({height: "toggle"},2000);
+          if(!$v.is(":visible"))
+            $v.animate({height: "toggle"},2000);
+            
+
+         }
+      
+
+    </script>
+</body>
+</html>
