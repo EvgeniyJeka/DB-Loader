@@ -1,9 +1,18 @@
 import csv
+from Executer import Executer
+
+
+# # This info must be taken from config file when an instance of this class is created.
+# hst = '127.0.0.1'
+# usr = 'root'
+# pwd = '7417418'
+# db_name = 'play'
 
 class Core(object):
 
-    # def __init__(self):
-    #     executor = Executor()
+    def __init__(self):
+        self.executor = Executer()
+        # self.cursor = self.executor.connect_me(hst, usr, pwd, db_name)
     
     def add_csv(self, data, file_name):
         
@@ -11,7 +20,6 @@ class Core(object):
         received_file = open(f"./input/{file_name}", "w+")
         received_file.write(data)
         received_file.close
-
 
 
         # Extracting data
@@ -31,10 +39,7 @@ class Core(object):
                     print(row)
 
 
-        # Creating new table
-        # executor.create_table(file_name, column_names)
+        result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows)
 
-        # Filling the table
-        # executer.fill_table(file_name, rows)
 
         return data

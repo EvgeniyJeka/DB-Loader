@@ -23,8 +23,16 @@ def receive_txt():
     print(a)
     return data.filename
 
-@app.route('/add_csv_file', methods = ['POST'])
+@app.route("/add_csv_file", methods = ['POST'])
 def receive_csv():
+    """
+    Receiving CSV files adding their content to DB.
+    In this method  API request is processed, it's body is parsed and the content is passed to "add_csv" method
+    of Core class. If there is a table which name is identical to received file name, table content is
+    appended to existing table. Otherwise a new table is created.
+
+    :return:
+    """
     data = request.files['file']
 
     # Verify csv extension
@@ -34,6 +42,7 @@ def receive_csv():
         print(f"Log: Error - files with extension {file_extension} aren't processed by this method.")
         return f"Log: Error - files with extension {file_extension} aren't processed by this method."
 
+    # Use "add_csv" method from the Core class to add the content of the received file to DB
     body_content = str(data.read(), 'utf-8')
     result = core.add_csv(body_content, data.filename)
 
@@ -42,6 +51,8 @@ def receive_csv():
 @app.route('/add_json', methods = ['POST'])
 def receive_json():
     pass
+
+# Table as JSON (list of JSON objects)
 
 
 
