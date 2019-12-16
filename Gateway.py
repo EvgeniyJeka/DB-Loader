@@ -10,18 +10,6 @@ app = Flask(__name__)
 core = Core()
 
 
-@app.route('/index')
-def index():
-
-    return render_template("verticalAccordion.html")
-
-@app.route('/txt_file', methods = ['POST'])
-def receive_txt():
-
-    data = request.files['file']
-    a = str(data.read(),'utf-8')
-    print(a)
-    return data.filename
 
 @app.route("/add_csv_file", methods = ['POST'])
 def receive_csv():
@@ -51,11 +39,15 @@ def receive_csv():
 @app.route('/add_json', methods = ['POST'])
 def receive_json():
     data = request.get_json()
-    print(data)
     result = core.add_json(data)
-    # print(data.keys())
-    # print(data.values())
-    return result
+
+    if result:
+        return result
+
+    else:
+        return f"The requested operation has failed."
+
+
 
 
 

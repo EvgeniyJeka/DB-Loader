@@ -45,27 +45,39 @@ class Core(object):
 
     def add_json(self, data):
         table_names = [x for x in data.keys()]
-        table_content = data[table_names[0]]
 
-        table_columns = [x for x in table_content[0].keys()]
+        for table_name in table_names:
+            table_json_content = data[table_name]
 
-        table_data = []
-        parse_object = []
+            try:
+                table_columns = [x for x in table_json_content[0].keys()]
+                table_rows_value = []
+                single_row = []
 
-        for element in table_content:
-            for column in table_columns:
-                parse_object.append(str(element[column]))
+            except (IndexError, TypeError, AttributeError):
+                print(f"Log: Data is missing or corrupted in provided JSON object. Can't fill the table.")
+                return False
 
-            table_data.append(parse_object)
-            parse_object = []
+            # Each JSON key represents a table column. Therefore all JSON objects
+            # must have identical keys to fit the table.
+            try:
+                for element in table_json_content:
+                    for column in table_columns:
+                        single_row.append(str(element[column]))
 
-        print("**************")
-        print(table_data)
-        print("**************")
+                    table_rows_value.append(single_row)
+                    single_row = []
 
-        result = self.executor.create_fill_table(table_names[0], table_columns, table_data)
+            except KeyError as e:
+                print(f"Log: Error - the key {e} is missing in one of the JSON objects in the list.")
+                return False
 
-        return str(table_columns)
+            result = self.executor.create_fill_table(table_name, table_columns, table_rows_value)
+
+            if result:
+                return f"DB was successfully updated. Table names: {table_names}"
+
+        return False
 
 
 

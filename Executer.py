@@ -42,10 +42,6 @@ class Executer(object):
 
     def create_fill_table(self, file_name, column_names, table_data):
 
-        print("**************")
-        print(table_data)
-        print("**************")
-
         cursor = self.cursor
 
         cursor.execute('show tables')
@@ -73,6 +69,8 @@ class Executer(object):
             query = f"insert into {file_name} values ('{inserted_values}');"
             print(query)
             cursor.execute(query)
+
+        return True
 
 
 
