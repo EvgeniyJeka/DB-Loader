@@ -42,7 +42,9 @@ class Executer(object):
 
     def create_fill_table(self, file_name, column_names, table_data):
 
-        # print(f"Log: Table data - {table_data[0]}")
+        print("**************")
+        print(table_data)
+        print("**************")
 
         cursor = self.cursor
 
@@ -51,7 +53,7 @@ class Executer(object):
 
         tables = [tup[0] for tup in tups]
 
-        # Creating ...
+        # Creating new table to store the file content if required.
         if file_name not in tables:
             print(f"Logs: {file_name} table is missing! Creating the {file_name} table")
 
@@ -66,10 +68,6 @@ class Executer(object):
         print(f"Log: Table data - {table_data}")
 
         # Filling the table
-        # inserted_rows = ["'"+x+"'" for x in table_data[0]]
-
-        # print(f"Log: Table data - {table_data}")
-
         for row in table_data:
             inserted_values = "', '".join(row)
             query = f"insert into {file_name} values ('{inserted_values}');"

@@ -50,9 +50,14 @@ def receive_csv():
 
 @app.route('/add_json', methods = ['POST'])
 def receive_json():
-    pass
+    data = request.get_json()
+    print(data)
+    result = core.add_json(data)
+    # print(data.keys())
+    # print(data.values())
+    return result
 
-# Table as JSON (list of JSON objects)
+
 
 
 

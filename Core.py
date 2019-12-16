@@ -41,5 +41,33 @@ class Core(object):
 
         result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows)
 
-
         return data
+
+    def add_json(self, data):
+        table_names = [x for x in data.keys()]
+        table_content = data[table_names[0]]
+
+        table_columns = [x for x in table_content[0].keys()]
+
+        table_data = []
+        parse_object = []
+
+        for element in table_content:
+            for column in table_columns:
+                parse_object.append(str(element[column]))
+
+            table_data.append(parse_object)
+            parse_object = []
+
+        print("**************")
+        print(table_data)
+        print("**************")
+
+        result = self.executor.create_fill_table(table_names[0], table_columns, table_data)
+
+        return str(table_columns)
+
+
+
+
+        #for table in table_names:
