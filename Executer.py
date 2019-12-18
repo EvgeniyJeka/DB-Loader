@@ -70,7 +70,7 @@ class Executer(object):
             print(query)
             cursor.execute(query)
 
-        return True
+        return {"response":"DB was successfully updated"}
 
 
 

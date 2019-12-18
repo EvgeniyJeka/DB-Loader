@@ -1,5 +1,6 @@
 import csv
 from Executer import Executer
+import xlrd
 
 
 # # This info must be taken from config file when an instance of this class is created.
@@ -14,12 +15,12 @@ class Core(object):
         self.executor = Executer()
         # self.cursor = self.executor.connect_me(hst, usr, pwd, db_name)
     
-    def add_csv(self, data, file_name):
+    def add_csv(self, file_name):
         
         # Saving the received file
-        received_file = open(f"./input/{file_name}", "w+")
-        received_file.write(data)
-        received_file.close
+        # received_file = open(f"./input/{file_name}", "w+")
+        # received_file.write(data)
+        # received_file.close
 
 
         # Extracting data
@@ -41,7 +42,30 @@ class Core(object):
 
         result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows)
 
-        return data
+        return result
+
+    def add_xlsx(self, file_name):
+
+        table_columns = []
+        table_rows = []
+
+        wb = xlrd.open_workbook(f"./input/{file_name}")
+        sheet = wb.sheet_by_index(0)
+
+        for i in range(sheet.ncols):
+            table_columns.append(sheet.cell_value(0, i))
+
+        print(f"Log: Table columns - {table_columns}")
+
+        for i in range(1, sheet.nrows):
+            table_rows.append([str(x) for x in sheet.row_values(i)])
+
+        print(f"Log: Table rows - {table_rows}")
+
+        result = self.executor.create_fill_table(file_name.split('.')[0], table_columns, table_rows)
+
+        return result
+
 
     def add_json(self, data):
         table_names = [x for x in data.keys()]
@@ -82,4 +106,4 @@ class Core(object):
 
 
 
-        #for table in table_names:
+

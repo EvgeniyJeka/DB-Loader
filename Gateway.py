@@ -1,4 +1,5 @@
 import flask
+import os
 from flask import Flask, render_template
 from flask import request
 from Core import Core
@@ -10,31 +11,34 @@ app = Flask(__name__)
 core = Core()
 
 
-
-@app.route("/add_csv_file", methods = ['POST'])
-def receive_csv():
+@app.route("/add_file", methods = ['POST'])
+def receive_file():
     """
-    Receiving CSV files adding their content to DB.
-    In this method  API request is processed, it's body is parsed and the content is passed to "add_csv" method
-    of Core class. If there is a table which name is identical to received file name, table content is
-    appended to existing table. Otherwise a new table is created.
+        Receiving CSV and XLSX files adding their content to DB.
+        In this method  API request is processed, it's body is parsed and the content is passed to "add_file" method
+        of Core class. If there is a table which name is identical to received file name, table content is
+        appended to existing table. Otherwise a new table is created.
 
-    :return:
+        :return: JSON - confirmation on success, error message otherwise.
     """
-    data = request.files['file']
 
-    # Verify csv extension
-    file_extension = data.filename.split('.')[1]
-    print(f"Log: file with extension {file_extension} was received")
-    if not file_extension == 'csv':
-        print(f"Log: Error - files with extension {file_extension} aren't processed by this method.")
-        return f"Log: Error - files with extension {file_extension} aren't processed by this method."
+    # Saving the received file
+    file = request.files['file']
+    file_extension = file.filename.split('.')[1]
+    file_path = f"./input/{file.filename}"
+    file.save(file_path)
 
-    # Use "add_csv" method from the Core class to add the content of the received file to DB
-    body_content = str(data.read(), 'utf-8')
-    result = core.add_csv(body_content, data.filename)
+    if file_extension == 'xlsx' or file_extension == 'xls':
+        result = core.add_xlsx(file.filename)
+        return result
 
-    return result
+    elif file_extension == 'csv':
+        result = core.add_csv(file.filename)
+        return result
+
+    return {"response": "Error - File extension must be CSV, XLS or XLSX."}
+
+
 
 @app.route('/add_json', methods = ['POST'])
 def receive_json():
@@ -46,12 +50,6 @@ def receive_json():
 
     else:
         return f"The requested operation has failed."
-
-
-
-
-
-
 
 
 
