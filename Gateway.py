@@ -51,6 +51,15 @@ def receive_json():
     else:
         return f"The requested operation has failed."
 
+@app.route('/table_to_json/<table_name>', methods = ['GET'])
+def table_to_json(table_name):
+
+    if table_name:
+        return core.table_as_json(table_name)
+
+    else:
+        return {"error": "Must enter valid table name."}
+
 
 
 

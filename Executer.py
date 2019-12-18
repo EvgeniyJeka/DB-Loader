@@ -72,6 +72,29 @@ class Executer(object):
 
         return {"response":"DB was successfully updated"}
 
+    # Get Table Column Names
+    def get_columns(self, table):
+        cursor = self.cursor
+        query = 'show columns from ''%s'';' % table
+        cursor.execute(query)
+        columns = cursor.fetchall()
+        result = []
+
+        for cl in columns:
+            result.append(cl[0])
+
+        return result
+
+    # Get table content from DB
+    def get_table_content(self, table):
+        cursor = self.cursor
+        query = f'select * from {table};'
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+
+
+
 
 
 

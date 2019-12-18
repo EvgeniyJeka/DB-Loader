@@ -1,27 +1,16 @@
 import csv
 from Executer import Executer
 import xlrd
+import json
+import pymysql
 
-
-# # This info must be taken from config file when an instance of this class is created.
-# hst = '127.0.0.1'
-# usr = 'root'
-# pwd = '7417418'
-# db_name = 'play'
 
 class Core(object):
 
     def __init__(self):
         self.executor = Executer()
-        # self.cursor = self.executor.connect_me(hst, usr, pwd, db_name)
-    
-    def add_csv(self, file_name):
-        
-        # Saving the received file
-        # received_file = open(f"./input/{file_name}", "w+")
-        # received_file.write(data)
-        # received_file.close
 
+    def add_csv(self, file_name):
 
         # Extracting data
         received_file = open(f"./input/{file_name}", "r")
@@ -35,10 +24,9 @@ class Core(object):
                 column_names = row
                 line_count += 1
             else:
-                if row != []:
+                if row:
                     rows.append(row)
                     print(row)
-
 
         result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows)
 
@@ -65,7 +53,6 @@ class Core(object):
         result = self.executor.create_fill_table(file_name.split('.')[0], table_columns, table_rows)
 
         return result
-
 
     def add_json(self, data):
         table_names = [x for x in data.keys()]
@@ -103,7 +90,39 @@ class Core(object):
 
         return False
 
+    def table_as_json(self, table_name):
+        """
+        Returns table content as a list of JSON objects.
+        Each JSON object represents one table record.
+
+        :param table_name: String
+        :return: list of JSON objects. The list is empty if there is no records in the table.
+        """
+        try:
+            columns = self.executor.get_columns(table_name)
+            records = self.executor.get_table_content(table_name)
+
+        except pymysql.err.ProgrammingError:
+            return {"error": "There is no tables with such name in this DB."}
+
+        result = []
+
+        for record in records:
+            table_record_json = {}
+            cnt = 0
+            for column in columns:
+                table_record_json[column] = record[cnt]
+                cnt += 1
+            result.append(table_record_json)
+
+        return json.dumps(result)
 
 
+if __name__ == "__main__":
+    core_test = Core()
+    b = core_test.table_as_json("cities")
+    c = json.loads(b)
+    print(c[0]['City'])
 
-
+    # a = json.loads(core_test.table_as_json("cities")[0])
+    # print(a["City"])
