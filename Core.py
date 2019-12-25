@@ -8,9 +8,9 @@ import pymysql
 class Core(object):
 
     def __init__(self):
-        self.executor = Executer()
+        self.executor = Executer("config.ini")
 
-    def add_csv(self, file_name):
+    def add_csv(self, file_name, action_type):
 
         # Extracting data
         received_file = open(f"./input/{file_name}", "r")
@@ -28,11 +28,11 @@ class Core(object):
                     rows.append(row)
                     print(row)
 
-        result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows)
+        result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows, action_type)
 
         return result
 
-    def add_xlsx(self, file_name):
+    def add_xlsx(self, file_name, action_type):
 
         table_columns = []
         table_rows = []
@@ -50,11 +50,11 @@ class Core(object):
 
         print(f"Log: Table rows - {table_rows}")
 
-        result = self.executor.create_fill_table(file_name.split('.')[0], table_columns, table_rows)
+        result = self.executor.create_fill_table(file_name.split('.')[0], table_columns, table_rows, action_type)
 
         return result
 
-    def add_json(self, data):
+    def add_json(self, data, action_type):
         table_names = [x for x in data.keys()]
 
         for table_name in table_names:
@@ -83,7 +83,7 @@ class Core(object):
                 print(f"Log: Error - the key {e} is missing in one of the JSON objects in the list.")
                 return False
 
-            result = self.executor.create_fill_table(table_name, table_columns, table_rows_value)
+            result = self.executor.create_fill_table(table_name, table_columns, table_rows_value, action_type)
 
             if result:
                 return f"DB was successfully updated. Table names: {table_names}"
