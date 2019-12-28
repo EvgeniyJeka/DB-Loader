@@ -4,6 +4,7 @@ import requests
 import json
 import xlrd
 import configparser
+import random
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -43,6 +44,28 @@ def prepare_table(request):
 
     finally:
         fin.close()
+
+@pytest.fixture(scope= "function")
+def create_worker():
+    # Creating new row to be inserted to the table.
+    worker_4 = {}
+    worker_4["name"] = f"John_{random.randint(1,1000)}"
+    worker_4["ID"] = str(random.randint(1,1000))
+    worker_4["title"] = "QA"
+    worker_4["location"] = "Italy"
+
+    return worker_4
+
+@pytest.fixture(scope= "function")
+def worker_invalid_column_order():
+    # Creating new row to be inserted to the table.
+    worker_4 = {}
+    worker_4["name"] = f"John_{random.randint(1,1000)}"
+    worker_4["ID"] = str(random.randint(1,1000))
+    worker_4["location"] = "Italy"
+    worker_4["title"] = "QA"
+
+    return worker_4
 
 @pytest.fixture(scope = "class")
 def table_add_data_expected_result(request):

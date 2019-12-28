@@ -10,7 +10,7 @@ config.read("../config.ini")
 base_url = config.get("URL", "base_url")
 
 
-class TestCreateTable(object):
+class TestFileUpload(object):
     executer = Executer("../config.ini")
 
     @pytest.mark.parametrize("remove_table", [["cities_test"]], indirect=True)
@@ -55,9 +55,6 @@ class TestCreateTable(object):
         try:
             response = requests.post(url, files=files)
             response_parsed = json.loads(response.content)
-
-            print(f"Log: Response content - {response_parsed}")
-            print(response_parsed.keys())
 
             assert 'error' in response_parsed.keys(), "Error - incorrect response from the server."
             assert response_parsed['error'] == \

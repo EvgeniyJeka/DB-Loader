@@ -1,9 +1,8 @@
-import flask
-import os
-from flask import Flask, render_template
+from flask import Flask
 from flask import request
 from Core import Core
-import csv
+
+
 
 app = Flask(__name__)
 

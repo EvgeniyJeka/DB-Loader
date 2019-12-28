@@ -78,7 +78,16 @@ Only the added content must be sent. To make a correction in a table that
 was previously uploaded it is better to use the "Overwrite" action type.
 
 
-# How To
+# How To 
+
+1. Enter the credentials to your MySQL DB to "config.ini" file - 
+user must have sufficient permissions to create, read, update and delete 
+tables.
+
+2. Unless the service is running locally, enter the URL with hosting 
+domain to "config.ini" file.
+
+3. Run the file "Gateway.py"  to activate the service.  
 
 # Tests
 

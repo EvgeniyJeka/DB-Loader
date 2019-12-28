@@ -3,12 +3,13 @@ from Executer import Executer
 import xlrd
 import json
 import pymysql
+config_file_path = "./config.ini"
 
 
 class Core(object):
 
     def __init__(self):
-        self.executor = Executer("config.ini")
+        self.executor = Executer(config_file_path)
 
     def add_csv(self, file_name, action_type):
 
@@ -86,7 +87,7 @@ class Core(object):
             result = self.executor.create_fill_table(table_name, table_columns, table_rows_value, action_type)
 
             if result:
-                return f"DB was successfully updated. Table names: {table_names}"
+                return result
 
         return False
 
@@ -103,7 +104,7 @@ class Core(object):
             records = self.executor.get_table_content(table_name)
 
         except pymysql.err.ProgrammingError:
-            return {"error": "There is no tables with such name in this DB."}
+            return {"error": "There is no table with such name in this DB."}
 
         result = []
 

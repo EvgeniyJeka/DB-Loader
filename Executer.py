@@ -37,13 +37,11 @@ class Executer(object):
         pwd = config.get("SQL_DB","password")
         db_name = config.get("SQL_DB","db_name")
 
-        # print(hst, usr, pwd, db_name)
-        print(type(pwd))
-
         self.cursor = self.connect_me(hst, usr, pwd, db_name)
 
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
+
 
         try:
             conn = pymysql.connect(host=hst, user=usr, password=pwd, db=db_name, autocommit='True')
