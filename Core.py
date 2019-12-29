@@ -12,7 +12,15 @@ class Core(object):
         self.executor = Executer(config_file_path)
 
     def add_csv(self, file_name, action_type):
+        """
+        This method is used to parse CSV file, get it's content and pass it to
+        "Executer" object so it will update the DB accordingly.
+        Action type is taken from API request and passed to Executer.
 
+        :param file_name: file name, will be used as a table name . Also it is part of the path to the file.
+        :param action_type: required action type: "Create", "Overwrite" or "Add data". Taken from the request.
+        :return: returns the response provided be the Executor.
+        """
         # Extracting data
         received_file = open(f"./input/{file_name}", "r")
         line_count = 0
@@ -27,14 +35,22 @@ class Core(object):
             else:
                 if row:
                     rows.append(row)
-                    print(row)
+                    # print(row)
 
         result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows, action_type)
 
         return result
 
     def add_xlsx(self, file_name, action_type):
+        """
+        This method is used to parse XLSX file, get it's content and pass it to
+        "Executer" object so it will update the DB accordingly.
+        Action type is taken from API request and passed to Executer.
 
+        :param file_name: file name, will be used as a table name . Also it is part of the path to the file.
+        :param action_type: required action type: "Create", "Overwrite" or "Add data". Taken from the request.
+        :return: returns the response provided be the Executor.
+        """
         table_columns = []
         table_rows = []
 
@@ -56,6 +72,14 @@ class Core(object):
         return result
 
     def add_json(self, data, action_type):
+        """
+        This method is used to parse the data provided as JSON and pass it to "Executer" object
+        so it will update the DB accordingly. Action type is taken from API request and passed to Executer.
+
+        :param data: JSON, content of expected POST request. The data will be added to the DB by Executer.
+        :param action_type: required action type: "Create", "Overwrite" or "Add data". Taken from the request.
+        :return: returns the response provided be the Executor or False on failure.
+        """
         table_names = [x for x in data.keys()]
 
         for table_name in table_names:
@@ -125,5 +149,4 @@ if __name__ == "__main__":
     c = json.loads(b)
     print(c[0]['City'])
 
-    # a = json.loads(core_test.table_as_json("cities")[0])
-    # print(a["City"])
+

@@ -5,6 +5,7 @@ import json
 import xlrd
 import configparser
 import random
+import csv
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -123,6 +124,25 @@ class TestTools(object):
         return {"table_headers":table_headers, "table_content":table_content}
 
     @staticmethod
+    def getc_csv_content(path):
+
+        received_file = open(path, "r")
+        line_count = 0
+        csv_reader = csv.reader(received_file, delimiter=',')
+
+        rows = []
+
+        for row in csv_reader:
+            if line_count == 0:
+                column_names = row
+                line_count += 1
+            else:
+                if row:
+                    rows.append(row)
+
+        return {"content":rows, "headers":column_names}
+
+    @staticmethod
     def table_in_db(table_name):
         executer.cursor.execute('show tables')
         tups = executer.cursor.fetchall()
@@ -132,6 +152,8 @@ class TestTools(object):
             return True
 
         return False
+
+
 
 
 

@@ -1,21 +1,6 @@
 import pymysql
 import configparser
 
-# hst = '127.0.0.1'
-# usr = 'root'
-# pwd = '7417418@a'
-# db_name = 'mysql'
-
-# Reading DB name, host and credentials from config
-# config = configparser.ConfigParser()
-# config.read("./config.ini")
-# hst = config.get("SQL_DB","host")
-# usr = config.get("SQL_DB","user")
-# pwd = config.get("SQL_DB","password")
-# db_name = config.get("SQL_DB","db_name")
-
-
-# Add ID that would be added automatically on insertion.
 
 class Executer(object):
     """
@@ -41,8 +26,16 @@ class Executer(object):
 
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
+        """
+        This method is used to establish a connection to MySQL DB.
+        Credentials , host and DB name are taken from "config.ini" file.
 
-
+        :param hst: host
+        :param usr: user
+        :param pwd: password
+        :param db_name: DB name
+        :return: mysql cursor
+        """
         try:
             conn = pymysql.connect(host=hst, user=usr, password=pwd, db=db_name, autocommit='True')
             cursor = conn.cursor()
@@ -152,8 +145,12 @@ class Executer(object):
 
         return {"response": "DB was successfully updated"}
 
-    # Get Table Column Names
     def get_columns(self, table):
+        """
+        Get Table Column Names
+        :param table: table name, String
+        :return: list
+        """
         cursor = self.cursor
         query = 'show columns from ''%s'';' % table
         cursor.execute(query)
@@ -165,17 +162,26 @@ class Executer(object):
 
         return result
 
-    # Get table content from DB
+
     def get_table_content(self, table):
+        """
+        Get table content from DB
+        :param table: table name, String
+        :return: tuple
+        """
         cursor = self.cursor
         query = f'select * from {table};'
         cursor.execute(query)
         result = cursor.fetchall()
         return result
 
-    # Checks for the difference between current and suggested table columns.
     def columns_verification(self, existing_columns: list, new_columns: list):
-
+        """
+        Checks for the difference between current and suggested table columns.
+        :param existing_columns: list
+        :param new_columns: list
+        :return: list
+        """
         if len(existing_columns) > len(new_columns):
             return False
 

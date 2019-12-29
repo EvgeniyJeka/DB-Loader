@@ -1,0 +1,224 @@
+{
+	"info": {
+		"_postman_id": "7c8a1f4f-2da8-4f31-9712-88d2c0be4fa3",
+		"name": "DBLoader",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Send CSV file",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/test_files/moderate.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/add_csv_file",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"add_csv_file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send JSON",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"workers\":[\n\t\t\n\t\t{\n\t\t\n\t\t\"name\":\"Anna\",\n\t\t\"ID\":351,\n\t\t\"title\":\"Designer\"\n\t\t\t\n\t\t},\n\t\t\n\t\t{\n\t\t\"name\":\"John\",\n\t\t\"ID\":293,\n\t\t\"title\":\"Front-End Developer\"\n\t\t\t\n\t\t}\n\t\t\n\t\t],\n\t\t\n\t\"departments\":[\n\t\t\n\t\t{\n\t\t\t\"name\":\"R&D\",\n\t\t\t\"workers\":25,\n\t\t\t\"floor\":2\n\t\t},\n\t\t\n\t\t{\n\t\t\t\"name\":\"Sysyem\",\n\t\t\t\"workers\":3,\n\t\t\t\"floor\":2\n\t\t}\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t]\n\t\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/add_json",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"add_json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send XLSX",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/test_files/cities_test.xlsx"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/add_file",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"add_file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send XLS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/test_files/planets.xls"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/add_file",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"add_file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get table content as JSON object.",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"disabled": true
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/table_to_json/cities",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"table_to_json",
+						"cities"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
