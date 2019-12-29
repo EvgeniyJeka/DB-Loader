@@ -20,6 +20,8 @@ If the uploaded data is JSON it must be contained in request body.
 The expected request URL must have the following structure:
 http://*domain name*/*action*/*action type*
 
+<img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/xlx_sending_sample.jpg" alt="Screenshot" width="600" />
+
 Sample POSTMAN requests can be found in "samples" folder.
 
 # Actions - data upload and download. 
