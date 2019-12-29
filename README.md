@@ -81,7 +81,7 @@ Example: http://127.0.0.1:5000/table_to_json/cities
 
 Response on success - table content in JSON:
 
-<img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/xlx_sending_sample.jpg" alt="Screenshot" width="600" />
+<img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/table_to_json_sample.jpg" alt="Screenshot" width="600" />
 
 
 # Action types
