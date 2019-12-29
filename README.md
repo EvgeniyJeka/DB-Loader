@@ -80,7 +80,7 @@ Method: GET
 Example: http://127.0.0.1:5000/table_to_json/cities
 
 Response on success - table content in JSON:
-...*...
+<img src="https://github.com/EvgeniyJeka/Debos/blob/master/Debos_screen_1.jpg" alt="Screenshot" width="500" />
 
 
 # Action types
