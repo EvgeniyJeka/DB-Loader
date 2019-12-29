@@ -118,7 +118,7 @@ Automated API tests are placed in "tests" folder.
 The tests cover all major user flows plus negative testing.
 The tests are written in Python, PyTest framework is used. 
 
-#Design and general flow:
+# Design and general flow:
 1. The request is received by Gateway and parsed by one of the methods. The 
 received file is saved. Gateway calls for Core instance to handle the request, 
 passes it's content(if applicable), "action", "action type" and received 
