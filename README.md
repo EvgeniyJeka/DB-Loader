@@ -22,7 +22,7 @@ http://*domain name*/*action*/*action type*
 
 <img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/xlx_sending_sample.jpg" alt="Screenshot" width="600" />
 
-Sample POSTMAN requests can be found in "samples" folder.
+Sample POSTMAN requests can be found in "tests/samples" folder.
 
 # Actions - data upload and download. 
 Data can be uploaded to SQL DB in several ways. Also the service 
