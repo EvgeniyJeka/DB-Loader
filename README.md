@@ -20,7 +20,9 @@ If the uploaded data is JSON it must be contained in request body.
 The expected request URL must have the following structure:
 http://*domain name*/*action*/*action type*
 
-Sample POSTMAN requests can be found in "samples" folder.
+<img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/xlx_sending_sample.jpg" alt="Screenshot" width="600" />
+
+Sample POSTMAN requests can be found in "tests/samples" folder.
 
 # Actions - data upload and download. 
 Data can be uploaded to SQL DB in several ways. Also the service 
@@ -80,7 +82,8 @@ Method: GET
 Example: http://127.0.0.1:5000/table_to_json/cities
 
 Response on success - table content in JSON:
-...*...
+
+<img src="https://github.com/EvgeniyJeka/DB-Loader/blob/master/tests/samples/table_to_json_sample.jpg" alt="Screenshot" width="600" />
 
 
 # Action types
@@ -115,7 +118,7 @@ Automated API tests are placed in "tests" folder.
 The tests cover all major user flows plus negative testing.
 The tests are written in Python, PyTest framework is used. 
 
-#Design and general flow:
+# Design and general flow:
 1. The request is received by Gateway and parsed by one of the methods. The 
 received file is saved. Gateway calls for Core instance to handle the request, 
 passes it's content(if applicable), "action", "action type" and received 
