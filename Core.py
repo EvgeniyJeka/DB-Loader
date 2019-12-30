@@ -3,6 +3,10 @@ from Executer import Executer
 import xlrd
 import json
 import pymysql
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 config_file_path = "./config.ini"
 
 
@@ -35,7 +39,6 @@ class Core(object):
             else:
                 if row:
                     rows.append(row)
-                    # print(row)
 
         result = self.executor.create_fill_table(file_name.split('.')[0], column_names, rows, action_type)
 
@@ -60,12 +63,12 @@ class Core(object):
         for i in range(sheet.ncols):
             table_columns.append(sheet.cell_value(0, i))
 
-        print(f"Log: Table columns - {table_columns}")
+        logging.info(f"Table columns - {table_columns}")
 
         for i in range(1, sheet.nrows):
             table_rows.append([str(x) for x in sheet.row_values(i)])
 
-        print(f"Log: Table rows - {table_rows}")
+        logging.info(f"Table rows - {table_rows}")
 
         result = self.executor.create_fill_table(file_name.split('.')[0], table_columns, table_rows, action_type)
 
@@ -82,21 +85,21 @@ class Core(object):
         """
         table_names = [x for x in data.keys()]
 
-        for table_name in table_names:
-            table_json_content = data[table_name]
-
-            try:
+        try:
+            for table_name in table_names:
+                table_json_content = data[table_name]
                 table_columns = [x for x in table_json_content[0].keys()]
+
+                # Each JSON key represents a table column. Therefore all JSON objects
+                # must have identical keys to fit the table.
+                for record in table_json_content:
+                    current_record_columns = [x for x in record.keys()]
+                    if current_record_columns != table_columns:
+                        raise KeyError
+
                 table_rows_value = []
                 single_row = []
 
-            except (IndexError, TypeError, AttributeError):
-                print(f"Log: Data is missing or corrupted in provided JSON object. Can't fill the table.")
-                return False
-
-            # Each JSON key represents a table column. Therefore all JSON objects
-            # must have identical keys to fit the table.
-            try:
                 for element in table_json_content:
                     for column in table_columns:
                         single_row.append(str(element[column]))
@@ -104,16 +107,17 @@ class Core(object):
                     table_rows_value.append(single_row)
                     single_row = []
 
-            except KeyError as e:
-                print(f"Log: Error - the key {e} is missing in one of the JSON objects in the list.")
-                return False
+                result = self.executor.create_fill_table(table_name, table_columns, table_rows_value, action_type)
 
-            result = self.executor.create_fill_table(table_name, table_columns, table_rows_value, action_type)
-
-            if result:
                 return result
 
-        return False
+        except (IndexError, TypeError, AttributeError):
+            logging.warning(f"Data is missing or corrupted in provided JSON object. Can't fill the table.")
+            return {"error": "Log: Data is missing or corrupted in provided JSON object. Can't fill the table."}
+
+        except KeyError as e:
+            logging.warning(f"Error - the key {e} is missing in one of the JSON objects in the list.")
+            return {"error": "Error - at least one key is missing in one of the JSON objects in the list."}
 
     def table_as_json(self, table_name):
         """
@@ -142,11 +146,8 @@ class Core(object):
 
         return json.dumps(result)
 
-
-if __name__ == "__main__":
-    core_test = Core()
-    b = core_test.table_as_json("cities")
-    c = json.loads(b)
-    print(c[0]['City'])
-
-
+# if __name__ == "__main__":
+#     core_test = Core()
+#     b = core_test.table_as_json("cities")
+#     c = json.loads(b)
+#     print(c[0]['City'])

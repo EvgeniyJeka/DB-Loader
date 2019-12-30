@@ -245,6 +245,63 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_invalid_json_extra_key(self, remove_table):
+        """
+        This test comes to verify that JSON with invalid structure is rejected, table isn't created
+        and user is presented with relevant error message. In this case the first JSON object
+        contains the key "wage", while the second doesn't. As a result, there are no common columns
+        and table can't be created.
+
+        :param remove_table: fixture used to remove the "workers" table if exists.
+        """
+        test_name = "Verifying error message on invalid input - unique key in first JSON object,"
+        print(f"-----------------Test: '{test_name}'-----------------")
+        url = base_url + "add_json/create"
+
+        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer", "wage": "21000"}
+        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
+
+        content = {"workers": [worker_1, worker_2]}
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['error'] =="Error - at least one key is missing in one of the JSON objects in the list.", \
+            "Invalid input, error message expected."
+
+        assert TestTools.table_in_db("workers") is False, "Error - table created although invalid input was provided."
+        print(f"-----------------Test '{test_name}' passed-----------------\n")
+
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_invalid_json_missing_key(self, remove_table):
+        """
+        This test comes to verify that JSON with invalid structure is rejected, table isn't created
+        and user is presented with relevant error message. In this case the second JSON object
+        contains the key "wage", while the first doesn't. As a result, there are no common columns
+        and table can't be created.
+
+        :param remove_table: fixture used to remove the "workers" table if exists.
+        """
+        test_name = "Verifying error message on invalid input - unique key in second JSON object,"
+        print(f"-----------------Test: '{test_name}'-----------------")
+        url = base_url + "add_json/create"
+
+        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
+        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer", "wage": "21000"}
+
+        content = {"workers": [worker_1, worker_2]}
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['error'] ==\
+               "Error - at least one key is missing in one of the JSON objects in the list.", \
+            "Invalid input, error message expected."
+
+        assert TestTools.table_in_db("workers") is False, "Error - table created although invalid input was provided."
+        print(f"-----------------Test '{test_name}' passed-----------------\n")
+
 
     @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']])
     def test_table_as_json(self, prepare_table):
@@ -277,8 +334,3 @@ class TestJsonUpload(object):
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
-
-
-
-
-

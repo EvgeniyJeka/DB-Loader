@@ -23,7 +23,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/test_files/moderate.csv"
+							"src": "/C:/Users/Prometeus/Desktop/moderate.csv"
 						}
 					]
 				},
@@ -66,7 +66,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:5000/add_json",
+					"raw": "http://127.0.0.1:5000/add_json/create",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -76,7 +76,8 @@
 					],
 					"port": "5000",
 					"path": [
-						"add_json"
+						"add_json",
+						"create"
 					]
 				}
 			},
@@ -100,7 +101,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/test_files/cities_test.xlsx"
+							"src": []
 						}
 					],
 					"options": {
@@ -110,7 +111,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:5000/add_file",
+					"raw": "http://127.0.0.1:5000/add_file/create",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -120,7 +121,8 @@
 					],
 					"port": "5000",
 					"path": [
-						"add_file"
+						"add_file",
+						"create"
 					]
 				}
 			},
@@ -144,7 +146,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/test_files/planets.xls"
+							"src": "/C:/Users/Prometeus/Desktop/planets.xls"
 						}
 					],
 					"options": {
@@ -154,7 +156,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:5000/add_file",
+					"raw": "http://127.0.0.1:5000/add_file/create",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -164,7 +166,8 @@
 					],
 					"port": "5000",
 					"path": [
-						"add_file"
+						"add_file",
+						"create"
 					]
 				}
 			},
@@ -214,6 +217,45 @@
 					"path": [
 						"table_to_json",
 						"cities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JSON - empty table",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\n\t\"empty\":[]\n\t\t\n\t\n\t\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/add_json/create",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"add_json",
+						"create"
 					]
 				}
 			},

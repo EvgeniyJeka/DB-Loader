@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import request
 from Core import Core
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 app = Flask(__name__)
@@ -49,11 +51,8 @@ def receive_json(action_type):
     data = request.get_json()
     result = core.add_json(data, action_type)
 
-    if result:
-        return result
+    return result
 
-    else:
-        return {"error": "The requested operation has failed."}
 
 
 @app.route('/table_to_json/<table_name>', methods=['GET'])
