@@ -43,6 +43,13 @@ Response on success:
 Method:POST
 Example: http://127.0.0.1:5000/add_json/create 
 
+Response on success: 
+  		
+    {
+    "response": "DB was successfully updated"
+     }			
+	
+
 The provided JSON object must be a list of objects.
 Each object in the list must be composed of simple "key" -"value" pairs,
 so it can be parsed and placed in SQL table. 
