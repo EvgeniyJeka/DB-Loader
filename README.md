@@ -28,7 +28,7 @@ Sample POSTMAN requests can be found in "tests/samples" folder.
 Data can be uploaded to SQL DB in several ways. Also the service 
 is able to provide SQL table content as JSON.
 
-1. "Add file" - used to upload files. 
+1. **"Add file"** - used to upload files. 
 Method: POST
 Example: http://127.0.0.1:5000/add_file/create
 
@@ -39,7 +39,7 @@ Response on success:
      }			
 	
 
-2. "Add JSON" - used to upload data in JSON. 
+2. **"Add JSON"** - used to upload data in JSON. 
 Method:POST
 Example: http://127.0.0.1:5000/add_json/create 
 
@@ -83,7 +83,7 @@ Response on success:
      }		
 
 
-3. "Table to JSON" - used to get SQL table content as JSON.
+3. **"Table to JSON"** - used to get SQL table content as JSON.
 Table name must be added after the action name.
 
 Method: GET
@@ -97,14 +97,14 @@ Response on success - table content in JSON:
 # Action types
 Several action types are supported.
 
-1. "Create" - create a new table in SQL DB with the requested name 
+1. **"Create"** - create a new table in SQL DB with the requested name 
 and save the provided data.
 
-2. "Overwrite" - overwrite an existing table if a table with such name 
+2. **"Overwrite"** - overwrite an existing table if a table with such name 
 already exists (otherwise a new table is created). Can be used to update
 the SQL table after changes were made in CSV/XLSX/XLS file.
 
-3. "Add data" - add additional row or column to an existing table.
+3. **"Add data"** - add additional row or column to an existing table.
 Only the added content must be sent. To make a correction in a table that 
 was previously uploaded it is better to use the "Overwrite" action type.
 
