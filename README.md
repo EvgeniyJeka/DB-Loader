@@ -1,4 +1,4 @@
-# DB-Loader v1.0
+# DB-Loader v1.1
 Web Service that receives data and loads it to SQL DB.
 Also the service is able to return the content of SQL table as JSON.
 
