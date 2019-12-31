@@ -52,7 +52,8 @@ Response on success:
 
 The provided JSON object must be a list of objects.
 Each object in the list must be composed of simple "key" -"value" pairs,
-so it can be parsed and placed in SQL table. 
+so it can be parsed and placed in SQL table. All objects in the list must have the same "keys", that will 
+be used as table columns.
 
 Expected JSON structure:
 
