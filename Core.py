@@ -102,7 +102,13 @@ class Core(object):
 
                 for element in table_json_content:
                     for column in table_columns:
-                        single_row.append(str(element[column]))
+
+                        string_verificator = str(element[column])
+
+                        if "'" in string_verificator:
+                            string_verificator = string_verificator.replace("'", "''")
+                            
+                        single_row.append(string_verificator)
 
                     table_rows_value.append(single_row)
                     single_row = []

@@ -69,7 +69,7 @@ class TestJsonUpload(object):
 
     def test_uploaded_table_content_json(self):
         """
-        Verifies the content of the uploaded file.
+        Verifies the content of the uploaded JSON.
 
         """
         test_name = "SQL DB content is identical to uploaded JSON content - XLSX extension."
@@ -94,10 +94,10 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    # Overwrite an existing table by sending xlsx file
+
     def test_overwrite_existing_table_json(self):
         """
-        Overwrite an existing table by sending file with the same name and using "overwrite" action type.
+        Overwrite an existing table by sending JSON with the same KEY and using "overwrite" action type.
 
         """
         test_name = "Overwrite an existing table by sending JSON."
@@ -105,7 +105,7 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/overwrite"
 
-        worker_1 = {"name": "Mike", "ID": '920', "title": "Product Manager"}
+        worker_1 = {"name": 'Mik"e', "ID": '920', "title": "P'roduct Manager"}
         content = {"workers": [worker_1]}
 
         TestJsonUpload.content = content
@@ -334,3 +334,5 @@ class TestJsonUpload(object):
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
+
+    
