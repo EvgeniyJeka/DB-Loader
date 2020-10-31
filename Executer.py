@@ -42,8 +42,9 @@ class Executer(object):
             cursor = conn.cursor()
 
         # Wrong Credentials error
-        except pymysql.err.OperationalError:
+        except pymysql.err.OperationalError as e:
             logging.critical("SQL DB -  Wrong Credentials or Host")
+            logging.critical(e)
 
         # Wrong DB name error
         except pymysql.err.InternalError:

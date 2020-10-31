@@ -142,6 +142,12 @@ user input a relevant error message is provided to the user in response
 (as JSON).
 
 
+Recommended commands for DB configurations:
+
+create database db_loader;
+show databases;
+use db_loader;
+show tables;
 
   
 

@@ -13,6 +13,7 @@ base_url = config.get("URL", "base_url")
 
 class TestSupportedExtensions(object):
     executer = Executer("../config.ini")
+    # content = None
 
     @pytest.mark.parametrize("remove_table", [["moderate"]], indirect=True)
     def test_upload_csv(self, remove_table):

@@ -69,7 +69,7 @@ class TestJsonUpload(object):
 
     def test_uploaded_table_content_json(self):
         """
-        Verifies the content of the uploaded JSON.
+        Verifies the content of the uploaded file.
 
         """
         test_name = "SQL DB content is identical to uploaded JSON content - XLSX extension."
@@ -94,10 +94,10 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-
+    # Overwrite an existing table by sending xlsx file
     def test_overwrite_existing_table_json(self):
         """
-        Overwrite an existing table by sending JSON with the same KEY and using "overwrite" action type.
+        Overwrite an existing table by sending file with the same name and using "overwrite" action type.
 
         """
         test_name = "Overwrite an existing table by sending JSON."
@@ -105,7 +105,7 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/overwrite"
 
-        worker_1 = {"name": 'Mik"e', "ID": '920', "title": "P'roduct Manager"}
+        worker_1 = {"name": "Mike", "ID": '920', "title": "Product Manager"}
         content = {"workers": [worker_1]}
 
         TestJsonUpload.content = content
@@ -245,75 +245,14 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_invalid_json_extra_key(self, remove_table):
-        """
-        This test comes to verify that JSON with invalid structure is rejected, table isn't created
-        and user is presented with relevant error message. In this case the first JSON object
-        contains the key "wage", while the second doesn't. As a result, there are no common columns
-        and table can't be created.
 
-        :param remove_table: fixture used to remove the "workers" table if exists.
-        """
-        test_name = "Verifying error message on invalid input - unique key in first JSON object,"
-        print(f"-----------------Test: '{test_name}'-----------------")
-        url = base_url + "add_json/create"
-
-        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer", "wage": "21000"}
-        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
-
-        content = {"workers": [worker_1, worker_2]}
-
-        response = requests.post(url, json=content)
-        response_parsed = json.loads(response.content)
-
-        assert response_parsed['error'] =="Error - at least one key is missing in one of the JSON objects in the list.", \
-            "Invalid input, error message expected."
-
-        assert TestTools.table_in_db("workers") is False, "Error - table created although invalid input was provided."
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
-
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_invalid_json_missing_key(self, remove_table):
-        """
-        This test comes to verify that JSON with invalid structure is rejected, table isn't created
-        and user is presented with relevant error message. In this case the second JSON object
-        contains the key "wage", while the first doesn't. As a result, there are no common columns
-        and table can't be created.
-
-        :param remove_table: fixture used to remove the "workers" table if exists.
-        """
-        test_name = "Verifying error message on invalid input - unique key in second JSON object,"
-        print(f"-----------------Test: '{test_name}'-----------------")
-        url = base_url + "add_json/create"
-
-        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
-        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer", "wage": "21000"}
-
-        content = {"workers": [worker_1, worker_2]}
-
-        response = requests.post(url, json=content)
-        response_parsed = json.loads(response.content)
-
-        assert response_parsed['error'] ==\
-               "Error - at least one key is missing in one of the JSON objects in the list.", \
-            "Invalid input, error message expected."
-
-        assert TestTools.table_in_db("workers") is False, "Error - table created although invalid input was provided."
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
-
+        # Next test:
+        # Download table content as JSON, verify against DB table.
 
     @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']])
     def test_table_as_json(self, prepare_table):
-        """
-        Verifies table content provided as JSON is identical to DB table content.
 
-        :param prepare_table: fixture used to remove the "workers" table if exists.
-        """
         # Sending the request
-        test_name = "Verifying table content provided as JSON is identical to DB table content."
-        print(f"-----------------Test: '{test_name}'-----------------")
-
         url = base_url + "table_to_json/cities_test"
 
         response = requests.get(url=url)
@@ -333,6 +272,8 @@ class TestJsonUpload(object):
 
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    
+
+
+
+
