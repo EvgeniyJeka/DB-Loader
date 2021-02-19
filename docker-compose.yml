@@ -1,15 +1,26 @@
 version: '3'
-services:
 
+
+services:
+      
   cabin_db:
     image: mysql:latest
     volumes:
       - "./.mysql-data/db:/var/lib/mysql"
     restart: always
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: sys
       MYSQL_USER: root
       MYSQL_PASSWORD: 123456
+       
+  db_loader:
+    image: db_loader_net:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      - cabin_db
+      
+      
