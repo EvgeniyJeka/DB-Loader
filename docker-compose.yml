@@ -3,7 +3,7 @@ version: '3'
 
 services:
       
-  cabin_db:
+  mysql:
     image: mysql:latest
     volumes:
       - "./.mysql-data/db:/var/lib/mysql"
@@ -21,6 +21,6 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - cabin_db
-      
+      - mysql
+
       
