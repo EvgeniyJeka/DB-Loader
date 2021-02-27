@@ -51,7 +51,7 @@ class Executer(object):
 
             else:
                 query = f"CREATE DATABASE {db_name}"
-                logging.info(f"Executing query |{query}|")
+                logging.info(f"Executing query | {query}|")
                 cursor.execute(query)
 
 
