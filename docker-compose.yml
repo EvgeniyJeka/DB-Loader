@@ -2,9 +2,9 @@ version: '3'
 
 
 services:
-      
+
   mysql:
-    image: mysql:latest
+    image: mysql:8.0.21
     volumes:
       - "./.mysql-data/db:/var/lib/mysql"
     restart: always
@@ -15,12 +15,11 @@ services:
       MYSQL_DATABASE: sys
       MYSQL_USER: root
       MYSQL_PASSWORD: 123456
-       
+
   db_loader:
     image: db_loader_net:latest
+    restart: always
     ports:
       - "5000:5000"
     depends_on:
       - mysql
-
-      
