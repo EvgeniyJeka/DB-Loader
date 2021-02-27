@@ -38,8 +38,22 @@ class Executer(object):
         :return: mysql cursor
         """
         try:
-            conn = pymysql.connect(host=hst, user=usr, password=pwd, db=db_name, autocommit='True')
+            conn = pymysql.connect(host=hst, user=usr, password=pwd, autocommit='True')
             cursor = conn.cursor()
+
+            cursor.execute('show databases')
+            databases = [x[0] for x in cursor.fetchall()]
+
+            if db_name in databases:
+                query = f"USE {db_name}"
+                logging.info(f"Executing query |{query}|")
+                cursor.execute(query)
+
+            else:
+                query = f"CREATE DATABASE {db_name}"
+                logging.info(f"Executing query |{query}|")
+                cursor.execute(query)
+
 
         # Wrong Credentials error
         except pymysql.err.OperationalError as e:
@@ -47,8 +61,9 @@ class Executer(object):
             logging.critical(e)
 
         # Wrong DB name error
-        except pymysql.err.InternalError:
+        except pymysql.err.InternalError as e:
             logging.critical("SQL DB - Unknown Database")
+            logging.critical(e)
 
         return cursor
 
@@ -218,8 +233,11 @@ class Executer(object):
         return True
 
 
-# if __name__ == "__main__":
-#     executer = Executer()
-#     new_columns = ["City", "Color", "ID", "Altitude", "Depth"]
-#
-#     print(executer.columns_verification(executer.get_columns("cities"), new_columns))
+if __name__ == "__main__":
+    executer = Executer("./config.ini")
+    #executer.cursor.execute('use db_loader')
+    # executer.cursor.execute('show databases')
+    # tups = [x[0] for x in executer.cursor.fetchall()]
+    # print(tups)
+    # print('db_loader' in tups)
+

@@ -70,4 +70,4 @@ def table_to_json(table_name):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, host='0.0.0.0')
