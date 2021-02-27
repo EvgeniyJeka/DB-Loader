@@ -1,10 +1,13 @@
 version: '3'
 
+networks:
+  mysql:
+    driver: bridge
 
 services:
 
   mysql:
-    image: mysql:8.0.21
+    image: mysql:latest
     volumes:
       - "./.mysql-data/db:/var/lib/mysql"
     restart: always
@@ -15,6 +18,8 @@ services:
       MYSQL_DATABASE: sys
       MYSQL_USER: root
       MYSQL_PASSWORD: 123456
+    networks:
+      - mysql
 
   db_loader:
     image: db_loader_net:latest
@@ -22,4 +27,6 @@ services:
     ports:
       - "5000:5000"
     depends_on:
+      - mysql
+    networks:
       - mysql
