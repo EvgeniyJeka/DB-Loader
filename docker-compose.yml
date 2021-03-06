@@ -21,12 +21,16 @@ services:
     networks:
       - mysql
 
-  db_loader:
-    image: db_loader_net:latest
-    restart: always
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mysql
-    networks:
-      - mysql
+#  db_loader:
+#    image: db_loader_net:latest
+#    restart: always
+#    ports:
+#      - "5000:5000"
+#    depends_on:
+#      - mysql
+#    networks:
+#      - mysql
+      
+
+
+

@@ -273,6 +273,33 @@ class TestJsonUpload(object):
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
 
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_sql_injection_table_name_blocked(self, remove_table):
+        """
+         Verify SQL injection in file name is blocked
+        :param remove_table: fixture used to remove a table from DB
+
+        """
+        test_name = "Verify SQL injection in file name is blocked. Sending JSON."
+        print(f"\n-----------------Test: '{test_name}'-----------------")
+
+        url = base_url + "add_json/create"
+
+        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
+        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
+
+        content = {"; select true;": [worker_1, worker_2]}
+
+        TestJsonUpload.content = content
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['error'] == "Can't create a new table - input is invalid",\
+            "SQL injection in JSON file name wasn't blocked"
+
+        print(f"-----------------Test '{test_name}' passed-----------------\n")
+
 
 
 

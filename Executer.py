@@ -68,6 +68,16 @@ class Executer(object):
 
         return cursor
 
+    def validate_args(self, received_arg):
+        if isinstance(received_arg, str):
+            return len(received_arg.split(" ")) == 1 and received_arg != ';'
+
+        elif isinstance(received_arg, list):
+            for element in received_arg:
+                if len(element.split(" ")) != 1 or element == ';':
+                    return False
+            return True
+
     def create_fill_table(self, file_name, column_names, table_data, action_type):
         """
         This method is used to handle several scenarios:
@@ -131,8 +141,14 @@ class Executer(object):
         return {"response": "DB was successfully updated"}
 
     def create_table_from_scratch(self, file_name, column_names, table_data):
-        cursor = self.cursor
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, column_names, table_data
+        input_check = self.validate_args(unchecked_input)
 
+        if input_check is False:
+            return {"error": f"Can't create a new table - input is invalid"}
+
+        cursor = self.cursor
         cursor.execute('show tables')
         tups = cursor.fetchall()
 
@@ -150,7 +166,7 @@ class Executer(object):
             try:
                 cursor.execute(query)
             except pymysql.err.ProgrammingError as e:
-                logging.warning(f"Failed to create a table - {e}")
+                logging.warning(f"Failed to create a table, query: {query}, error: {e}")
                 return {"error": f"Can't create a new table - input is invalid"}
 
         else:
@@ -246,9 +262,12 @@ if __name__ == "__main__":
     # executer.cursor.execute(query,{'mplanet': mplanet})
     # print(executer.cursor.fetchall())
 
+    print(executer.validate_args(['ff', 'aa', 'og']))
 
-    query = "select * from moderate where Moves = %s and Bars = %s;"
-    executer.cursor.execute(query, (direction, bars))
-    print(executer.cursor.fetchall())
+    # query = "select * from moderate where Moves = %s and Bars = %s;"
+    # executer.cursor.execute(query, (direction, bars))
+    # print(executer.cursor.fetchall())
+
+
 
 
