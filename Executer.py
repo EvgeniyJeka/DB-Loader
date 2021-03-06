@@ -129,6 +129,12 @@ class Executer(object):
         return self.fill_table(file_name, table_data)
 
     def fill_table(self, file_name, table_data):
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, table_data
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't update a table - input is invalid"}
         cursor = self.cursor
 
         # Filling the table
@@ -175,6 +181,13 @@ class Executer(object):
         return self.fill_table(file_name, table_data)
 
     def add_data_existing_table(self, file_name, column_names, table_data):
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, column_names, table_data
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't update a table - input is invalid"}
+
         cursor = self.cursor
 
         # Verifying provided column names against current column names.
@@ -224,6 +237,13 @@ class Executer(object):
         :param table: table name, String
         :return: tuple
         """
+        # Verifying no SQL injection can be performed here
+        unchecked_input = table
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't provide table content - input is invalid"}
+
         cursor = self.cursor
         query = f'select * from {table};'
         cursor.execute(query)
