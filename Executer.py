@@ -2,6 +2,8 @@ import pymysql
 import configparser
 import logging
 
+from psycopg2 import sql
+
 
 class Executer(object):
     """
@@ -53,7 +55,6 @@ class Executer(object):
                 query = f"CREATE DATABASE {db_name}"
                 logging.info(f"Executing query | {query}|")
                 cursor.execute(query)
-
 
         # Wrong Credentials error
         except pymysql.err.OperationalError as e:
@@ -234,10 +235,20 @@ class Executer(object):
 
 
 if __name__ == "__main__":
+
+    mplanet = 'Mars'
+
+    direction = 'Down'
+    bars = 760
+
     executer = Executer("./config.ini")
-    #executer.cursor.execute('use db_loader')
-    # executer.cursor.execute('show databases')
-    # tups = [x[0] for x in executer.cursor.fetchall()]
-    # print(tups)
-    # print('db_loader' in tups)
+    # query = "select * from planets where Planet = %(mplanet)s;"
+    # executer.cursor.execute(query,{'mplanet': mplanet})
+    # print(executer.cursor.fetchall())
+
+
+    query = "select * from moderate where Moves = %s and Bars = %s;"
+    executer.cursor.execute(query, (direction, bars))
+    print(executer.cursor.fetchall())
+
 
