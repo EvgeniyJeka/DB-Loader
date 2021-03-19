@@ -2,6 +2,8 @@ import pymysql
 import configparser
 import logging
 
+from psycopg2 import sql
+
 
 class Executer(object):
     """
@@ -38,8 +40,21 @@ class Executer(object):
         :return: mysql cursor
         """
         try:
-            conn = pymysql.connect(host=hst, user=usr, password=pwd, db=db_name, autocommit='True')
+            conn = pymysql.connect(host=hst, user=usr, password=pwd, autocommit='True')
             cursor = conn.cursor()
+
+            cursor.execute('show databases')
+            databases = [x[0] for x in cursor.fetchall()]
+
+            if db_name in databases:
+                query = f"USE {db_name}"
+                logging.info(f"Executing query |{query}|")
+                cursor.execute(query)
+
+            else:
+                query = f"CREATE DATABASE {db_name}"
+                logging.info(f"Executing query | {query}|")
+                cursor.execute(query)
 
         # Wrong Credentials error
         except pymysql.err.OperationalError as e:
@@ -47,10 +62,21 @@ class Executer(object):
             logging.critical(e)
 
         # Wrong DB name error
-        except pymysql.err.InternalError:
+        except pymysql.err.InternalError as e:
             logging.critical("SQL DB - Unknown Database")
+            logging.critical(e)
 
         return cursor
+
+    def validate_args(self, received_arg):
+        if isinstance(received_arg, str):
+            return len(received_arg.split(" ")) == 1 and received_arg != ';'
+
+        elif isinstance(received_arg, list):
+            for element in received_arg:
+                if len(element.split(" ")) != 1 or element == ';':
+                    return False
+            return True
 
     def create_fill_table(self, file_name, column_names, table_data, action_type):
         """
@@ -103,6 +129,12 @@ class Executer(object):
         return self.fill_table(file_name, table_data)
 
     def fill_table(self, file_name, table_data):
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, table_data
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't update a table - input is invalid"}
         cursor = self.cursor
 
         # Filling the table
@@ -115,8 +147,14 @@ class Executer(object):
         return {"response": "DB was successfully updated"}
 
     def create_table_from_scratch(self, file_name, column_names, table_data):
-        cursor = self.cursor
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, column_names, table_data
+        input_check = self.validate_args(unchecked_input)
 
+        if input_check is False:
+            return {"error": f"Can't create a new table - input is invalid"}
+
+        cursor = self.cursor
         cursor.execute('show tables')
         tups = cursor.fetchall()
 
@@ -134,7 +172,7 @@ class Executer(object):
             try:
                 cursor.execute(query)
             except pymysql.err.ProgrammingError as e:
-                logging.warning(f"Failed to create a table - {e}")
+                logging.warning(f"Failed to create a table, query: {query}, error: {e}")
                 return {"error": f"Can't create a new table - input is invalid"}
 
         else:
@@ -143,6 +181,13 @@ class Executer(object):
         return self.fill_table(file_name, table_data)
 
     def add_data_existing_table(self, file_name, column_names, table_data):
+        # Verifying no SQL injection can be performed here
+        unchecked_input = file_name, column_names, table_data
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't update a table - input is invalid"}
+
         cursor = self.cursor
 
         # Verifying provided column names against current column names.
@@ -192,6 +237,13 @@ class Executer(object):
         :param table: table name, String
         :return: tuple
         """
+        # Verifying no SQL injection can be performed here
+        unchecked_input = table
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't provide table content - input is invalid"}
+
         cursor = self.cursor
         query = f'select * from {table};'
         cursor.execute(query)
@@ -218,8 +270,24 @@ class Executer(object):
         return True
 
 
-# if __name__ == "__main__":
-#     executer = Executer()
-#     new_columns = ["City", "Color", "ID", "Altitude", "Depth"]
-#
-#     print(executer.columns_verification(executer.get_columns("cities"), new_columns))
+if __name__ == "__main__":
+
+    mplanet = 'Mars'
+
+    direction = 'Down'
+    bars = 760
+
+    executer = Executer("./config.ini")
+    # query = "select * from planets where Planet = %(mplanet)s;"
+    # executer.cursor.execute(query,{'mplanet': mplanet})
+    # print(executer.cursor.fetchall())
+
+    print(executer.validate_args(['ff', 'aa', 'og']))
+
+    # query = "select * from moderate where Moves = %s and Bars = %s;"
+    # executer.cursor.execute(query, (direction, bars))
+    # print(executer.cursor.fetchall())
+
+
+
+

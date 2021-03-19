@@ -3,5 +3,6 @@ xlrd
 pytest
 requests
 PyMySQL
+cryptography
 
 
