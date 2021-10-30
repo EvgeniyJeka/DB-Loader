@@ -246,10 +246,10 @@ class TestJsonUpload(object):
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
 
-        # Next test:
-        # Download table content as JSON, verify against DB table.
 
-    @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']])
+    # Next test:
+    # Download table content as JSON, verify against DB table.
+    @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']],indirect=True)
     def test_table_as_json(self, prepare_table):
 
         # Sending the request
