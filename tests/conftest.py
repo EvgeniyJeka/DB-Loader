@@ -9,10 +9,10 @@ import csv
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
-base_url = config.get("URL","base_url")
-#base_url = f"http://127.0.0.1:5000/"
+base_url = config.get("URL", "base_url")
 
 executer = Executer("../config.ini")
+
 
 @pytest.fixture(scope = "function")
 def remove_table(request):
@@ -144,7 +144,7 @@ class TestTools(object):
                 if row:
                     rows.append(row)
 
-        return {"content":rows, "headers":column_names}
+        return {"content": rows, "headers": column_names}
 
     @staticmethod
     def table_in_db(table_name):

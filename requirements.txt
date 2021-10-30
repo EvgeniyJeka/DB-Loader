@@ -1,5 +1,5 @@
 Flask
-xlrd
+xlrd == 1.2.0
 pytest
 requests
 PyMySQL
