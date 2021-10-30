@@ -12,7 +12,7 @@ base_url = config.get("URL", "base_url")
 
 
 class TestJsonUpload(object):
-    executer = Executer("../config.ini")
+    executer = Executer("./config.ini")
     content = None
 
     @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)

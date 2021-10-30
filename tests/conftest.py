@@ -11,7 +11,7 @@ config = configparser.ConfigParser()
 config.read("../config.ini")
 base_url = config.get("URL", "base_url")
 
-executer = Executer("../config.ini")
+executer = Executer("./config.ini")
 
 
 @pytest.fixture(scope = "function")
