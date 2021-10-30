@@ -1,11 +1,12 @@
-import os
-
 from flask import Flask
 from flask import request
 from Core import Core
 import logging
 logging.basicConfig(level=logging.INFO)
 
+# 1. SQL Server warm up delay - add handling in Executor in try-except block
+# 2. Tests are running locally, while the service runs in Docker container - as a result SQL host is different,
+# while there is ONE value in config file used by the service and by the tests
 
 app = Flask(__name__)
 
