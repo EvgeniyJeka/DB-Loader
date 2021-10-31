@@ -7,7 +7,7 @@ networks:
 services:
 
   mysql:
-    image: mysql:latest
+    image: mysql:8.0.27
     volumes:
       - "./.mysql-data/db:/var/lib/mysql"
     restart: always
@@ -16,13 +16,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: sys
-      MYSQL_USER: root
-      MYSQL_PASSWORD: 123456
     networks:
       - mysql
 
   db_loader:
     image: db_loader_net:latest
+    build: ./
     restart: always
     ports:
       - "5000:5000"

@@ -9,10 +9,10 @@ import csv
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
-base_url = config.get("URL","base_url")
-#base_url = f"http://127.0.0.1:5000/"
+base_url = config.get("URL", "base_url")
 
-executer = Executer("../config.ini")
+executer = Executer("./config.ini")
+
 
 @pytest.fixture(scope = "function")
 def remove_table(request):
@@ -28,7 +28,7 @@ def remove_table(request):
         cursor.execute(f"drop table {table_tame}")
 
 
-@pytest.fixture(scope = "class")
+@pytest.fixture(scope="class")
 def prepare_table(request):
     file_path = request.param[0]
 
@@ -42,6 +42,10 @@ def prepare_table(request):
         response = requests.post(url, files=files)
         response_parsed = json.loads(response.content)
         assert response_parsed['response'] == 'DB was successfully updated'
+
+    except json.decoder.JSONDecodeError as e:
+        print(f"Failed to convert the response to JSON, response: {response}, text: {response.content}")
+        raise e
 
     finally:
         fin.close()
@@ -140,7 +144,7 @@ class TestTools(object):
                 if row:
                     rows.append(row)
 
-        return {"content":rows, "headers":column_names}
+        return {"content": rows, "headers": column_names}
 
     @staticmethod
     def table_in_db(table_name):

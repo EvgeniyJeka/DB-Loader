@@ -7,13 +7,12 @@ import configparser
 
 
 config = configparser.ConfigParser()
-config.read("../config.ini")
+config.read("./config.ini")
 base_url = config.get("URL", "base_url")
 
 
 class TestSupportedExtensions(object):
-    executer = Executer("../config.ini")
-    # content = None
+    executer = Executer("./config.ini")
 
     @pytest.mark.parametrize("remove_table", [["moderate"]], indirect=True)
     def test_upload_csv(self, remove_table):

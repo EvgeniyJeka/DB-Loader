@@ -2,8 +2,6 @@ import pymysql
 import configparser
 import logging
 
-from psycopg2 import sql
-
 
 class Executer(object):
     """

@@ -126,6 +126,13 @@ Automated API tests are placed in "tests" folder.
 The tests cover all major user flows plus negative testing.
 The tests are written in Python, PyTest framework is used. 
 
+Test files can be runned with the following cmd commands (from 'tests' folder):
+- >pytest test_json_upload_download.py
+- >pytest test_supported extensions.py
+- >pytest test_json_upload_xslx_files.py
+
+Please note: Make sure MySQL server is up before running the tests.
+
 # Design and general flow:
 1. The request is received by Gateway and parsed by one of the methods. The 
 received file is saved. Gateway calls for Core instance to handle the request, 
@@ -140,6 +147,7 @@ it passes validation.
 The requested update is performed in the DB. If it fails because of
 user input a relevant error message is provided to the user in response 
 (as JSON).
+
 
 
 
