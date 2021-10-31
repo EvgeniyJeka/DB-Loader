@@ -131,6 +131,7 @@ Test files can be runned with the following cmd commands (from 'tests' folder):
 - >pytest test_supported extensions.py
 - >pytest test_json_upload_xslx_files.py
 
+Please note: Make sure MySQL server is up before running the tests.
 
 # Design and general flow:
 1. The request is received by Gateway and parsed by one of the methods. The 
