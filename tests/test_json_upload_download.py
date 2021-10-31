@@ -12,14 +12,14 @@ base_url = config.get("URL", "base_url")
 
 
 class TestJsonUpload(object):
-    executer = Executer("../config.ini")
+    executer = Executer("./config.ini")
     content = None
 
     @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
     def test_table_creation_json(self, remove_table):
         """
          Verify confirmation is received on table successful creation.
-         Creating the table with "add_json" action.
+         Creating the table with "add_json"  action.
         :param remove_table: fixture used to remove a table from DB
 
         """
@@ -246,10 +246,10 @@ class TestJsonUpload(object):
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
 
-        # Next test:
-        # Download table content as JSON, verify against DB table.
 
-    @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']])
+    # Next test:
+    # Download table content as JSON, verify against DB table.
+    @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']],indirect=True)
     def test_table_as_json(self, prepare_table):
 
         # Sending the request

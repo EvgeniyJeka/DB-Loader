@@ -1,10 +1,10 @@
-import os
-
 from flask import Flask
 from flask import request
 from Core import Core
 import logging
 logging.basicConfig(level=logging.INFO)
+
+# 1. SQL Server warm up delay - add handling in Executor in try-except block
 
 
 app = Flask(__name__)
