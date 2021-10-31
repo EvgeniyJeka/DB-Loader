@@ -19,7 +19,7 @@ class TestJsonUpload(object):
     def test_table_creation_json(self, remove_table):
         """
          Verify confirmation is received on table successful creation.
-         Creating the table with "add_json" action.
+         Creating the table with "add_json"  action.
         :param remove_table: fixture used to remove a table from DB
 
         """
