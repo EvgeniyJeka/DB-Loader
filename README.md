@@ -10,6 +10,8 @@ and its content is added to SQL DB.
 
 Supported file extensions: CSV, XLSX, XLS.
 
+<img src="https://github.com/EvgeniyJeka/Creditto/blob/main/creditto_flow_.jpg" alt="Screenshot" width="1000" />
+
 
 
 # Expected request form.
