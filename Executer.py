@@ -4,6 +4,8 @@ import logging
 
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
+import sqlalchemy as db
+from sqlalchemy import exc
 
 
 class Executer(object):
@@ -26,7 +28,7 @@ class Executer(object):
         pwd = config.get("SQL_DB", "password")
         db_name = config.get("SQL_DB", "db_name")
 
-        self.cursor = self.connect_me(hst, usr, pwd, db_name)
+        self.cursor, self.engine = self.connect_me(hst, usr, pwd, db_name)
 
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
@@ -40,9 +42,10 @@ class Executer(object):
         :param db_name: DB name
         :return: SqlAlchemy connection (cursor)
         """
+        import sqlalchemy
         try:
 
-            url = f'mysql+pymysql://{usr}:{pwd}@{hst}:3306/db_loader'
+            url = f'mysql+pymysql://{usr}:{pwd}@{hst}:3306/{db_name}'
 
             # Create an engine object.
             engine = create_engine(url, echo=True)
@@ -51,20 +54,20 @@ class Executer(object):
             if not database_exists(engine.url):
                 create_database(engine.url)
                 cursor = engine.connect()
-                return cursor
+                return cursor, engine
             else:
                 # Connect the database if exists.
                 cursor = engine.connect()
-                return cursor
+                return cursor, engine
 
         # Wrong Credentials error
-        except pymysql.err.OperationalError as e:
-            logging.critical("SQL DB -  Wrong Credentials or Host")
+        except sqlalchemy.exc.OperationalError as e:
+            logging.critical("SQL DB -  Can't connect, verify credentials and host, verify the server is available")
             logging.critical(e)
 
-        # Wrong DB name error
-        except pymysql.err.InternalError as e:
-            logging.critical("SQL DB - Unknown Database")
+        # General error
+        except Exception as e:
+            logging.critical("SQL DB - Failed to connect, reason is unclear")
             logging.critical(e)
 
 
@@ -128,21 +131,34 @@ class Executer(object):
 
         return self.fill_table(file_name, table_data)
 
-    def fill_table(self, file_name, table_data):
+    def fill_table(self, file_name, table_data, table_emp, column_names):
         # Verifying no SQL injection can be performed here
         unchecked_input = file_name, table_data
         input_check = self.validate_args(unchecked_input)
 
         if input_check is False:
             return {"error": f"Can't update a table - input is invalid"}
-        cursor = self.cursor
 
-        # Filling the table
+        # # Filling the table
+        # for row in table_data:
+        #     inserted_values = "', '".join(row)
+        #     query = f"insert into {file_name} values ('{inserted_values}');"
+        #     logging.info(f"Executing query |{query}|")
+        #     cursor.execute(query)
+
+        added_values = []
+
         for row in table_data:
-            inserted_values = "', '".join(row)
-            query = f"insert into {file_name} values ('{inserted_values}');"
-            logging.info(f"Executing query |{query}|")
-            cursor.execute(query)
+            element = {}
+            for column_number in range(0, len(column_names)):
+                element[column_names[column_number]] = row[column_number]
+
+            added_values.append(element)
+
+        print(added_values)
+
+        query = table_emp.insert().values([*added_values])
+        self.cursor.execute(query)
 
         return {"response": "DB was successfully updated"}
 
@@ -155,30 +171,24 @@ class Executer(object):
             return {"error": f"Can't create a new table - input is invalid"}
 
         cursor = self.cursor
-        cursor.execute('show tables')
-        tups = cursor.fetchall()
-
-        tables = [tup[0] for tup in tups]
+        tables = self.engine.table_names()
 
         # Creating new table to store the file content if not exist.
         if file_name not in tables:
             logging.info(f"{file_name} table is missing! Creating the {file_name} table")
+            metadata = db.MetaData()
 
-            added_columns = " varchar(255),".join(column_names)
-            query = f"CREATE TABLE {file_name} ({added_columns} " + "varchar(255)" + ");"
-            logging.info(f"Executing query |{query}|")
+            # Creating table - column names are provided in a LIST
+            columns_list = [db.Column(x, db.String(255)) for x in column_names]
 
-            # Handling invalid input if provided.
-            try:
-                cursor.execute(query)
-            except pymysql.err.ProgrammingError as e:
-                logging.warning(f"Failed to create a table, query: {query}, error: {e}")
-                return {"error": f"Can't create a new table - input is invalid"}
+            # NOTE THE UNPACKING !!
+            table_emp = db.Table(file_name, metadata, *columns_list, extend_existing=True)
+            metadata.create_all(self.engine)
 
         else:
             return {"error": f"Can't create a new table - table with name {file_name} already exists"}
 
-        return self.fill_table(file_name, table_data)
+        return self.fill_table(file_name, table_data, table_emp, column_names)
 
     def add_data_existing_table(self, file_name, column_names, table_data):
         # Verifying no SQL injection can be performed here
@@ -274,16 +284,12 @@ if __name__ == "__main__":
 
 
     executer = Executer("./config.ini")
+    file_name = 'cars'
+    column_names = ("car", "speed", "location")
+    table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
 
-
-
-    # query = "select * from planets where Planet = %(mplanet)s;"
-    # executer.cursor.execute(query,{'mplanet': mplanet})
-    # print(executer.cursor.fetchall())
-
-    # query = "select * from moderate where Moves = %s and Bars = %s;"
-    # executer.cursor.execute(query, (direction, bars))
-    # print(executer.cursor.fetchall())
+    # Creating from scratch and filling SQL table
+    print(executer.create_table_from_scratch(file_name, column_names, table_data))
 
 
 
