@@ -2,6 +2,9 @@ import pymysql
 import configparser
 import logging
 
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+
 
 class Executer(object):
     """
@@ -35,24 +38,24 @@ class Executer(object):
         :param usr: user
         :param pwd: password
         :param db_name: DB name
-        :return: mysql cursor
+        :return: SqlAlchemy connection (cursor)
         """
         try:
-            conn = pymysql.connect(host=hst, user=usr, password=pwd, autocommit='True')
-            cursor = conn.cursor()
 
-            cursor.execute('show databases')
-            databases = [x[0] for x in cursor.fetchall()]
+            url = f'mysql+pymysql://{usr}:{pwd}@{hst}:3306/db_loader'
 
-            if db_name in databases:
-                query = f"USE {db_name}"
-                logging.info(f"Executing query |{query}|")
-                cursor.execute(query)
+            # Create an engine object.
+            engine = create_engine(url, echo=True)
 
+            # Create database if it does not exist.
+            if not database_exists(engine.url):
+                create_database(engine.url)
+                cursor = engine.connect()
+                return cursor
             else:
-                query = f"CREATE DATABASE {db_name}"
-                logging.info(f"Executing query | {query}|")
-                cursor.execute(query)
+                # Connect the database if exists.
+                cursor = engine.connect()
+                return cursor
 
         # Wrong Credentials error
         except pymysql.err.OperationalError as e:
@@ -64,7 +67,6 @@ class Executer(object):
             logging.critical("SQL DB - Unknown Database")
             logging.critical(e)
 
-        return cursor
 
     def validate_args(self, received_arg):
         if isinstance(received_arg, str):
@@ -270,17 +272,14 @@ class Executer(object):
 
 if __name__ == "__main__":
 
-    mplanet = 'Mars'
-
-    direction = 'Down'
-    bars = 760
 
     executer = Executer("./config.ini")
+
+
+
     # query = "select * from planets where Planet = %(mplanet)s;"
     # executer.cursor.execute(query,{'mplanet': mplanet})
     # print(executer.cursor.fetchall())
-
-    print(executer.validate_args(['ff', 'aa', 'og']))
 
     # query = "select * from moderate where Moves = %s and Bars = %s;"
     # executer.cursor.execute(query, (direction, bars))
