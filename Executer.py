@@ -7,9 +7,6 @@ from sqlalchemy_utils import database_exists, create_database
 import sqlalchemy as db
 from sqlalchemy import exc
 
-from alembic import op
-from sqlalchemy import Column, String
-
 
 class Executer(object):
     """
@@ -72,17 +69,6 @@ class Executer(object):
         except Exception as e:
             logging.critical("SQL DB - Failed to connect, reason is unclear")
             logging.critical(e)
-
-
-    # def validate_args(self, received_arg):
-    #     if isinstance(received_arg, str):
-    #         return len(received_arg.split(" ")) == 1 and received_arg != ';'
-    #
-    #     elif isinstance(received_arg, list):
-    #         for element in received_arg:
-    #             if len(element.split(" ")) != 1 or element == ';':
-    #                 return False
-    #         return True
 
     def create_fill_table(self, file_name, column_names, table_data, action_type):
         """
@@ -227,18 +213,15 @@ class Executer(object):
         :param table: table name, String
         :return: tuple
         """
-        # Verifying no SQL injection can be performed here
-        unchecked_input = table
-        input_check = self.validate_args(unchecked_input)
+        metadata = db.MetaData()
+        table_ = db.Table(table, metadata, autoload=True, autoload_with=self.engine)
 
-        if input_check is False:
-            return {"error": f"Can't provide table content - input is invalid"}
+        query = db.select([table_])
+        ResultProxy = self.cursor.execute(query)
+        result = ResultProxy.fetchall()
 
-        cursor = self.cursor
-        query = f'select * from {table};'
-        cursor.execute(query)
-        result = cursor.fetchall()
         return result
+
 
     def columns_verification(self, existing_columns: list, new_columns: list):
         """
@@ -264,7 +247,7 @@ if __name__ == "__main__":
 
 
     executer = Executer("./config.ini")
-    file_name = 'bars'
+    file_name = 'cars'
     # column_names = ("car", "speed", "location")
     # table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
     #
@@ -272,7 +255,7 @@ if __name__ == "__main__":
     # print(executer.create_table_from_scratch(file_name, column_names, table_data))
     #
     # # Adding columns to an existing table: added column "condition"
-    # column_names = ("car", "speed", "location", "condition")
+    column_names = ("car", "speed", "location", "condition")
     # table_data_updated = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
     # print(executer.add_data_existing_table(file_name, column_names, table_data_updated))
 
@@ -281,6 +264,11 @@ if __name__ == "__main__":
     print(columns)
 
     # Overwriting an existing table
+    table_data_updated_ = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Good"))
+    print(executer.overwrite_table(file_name, column_names, table_data_updated_))
+
+    # Getting table content
+    print(executer.get_table_content('cars'))
 
 
 

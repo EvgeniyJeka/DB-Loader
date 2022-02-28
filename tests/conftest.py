@@ -6,6 +6,7 @@ import xlrd
 import configparser
 import random
 import csv
+import sqlalchemy as db
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -20,12 +21,18 @@ def remove_table(request):
 
     cursor = executer.cursor
 
-    cursor.execute('show tables')
-    tups = cursor.fetchall()
-    tables = [tup[0] for tup in tups]
+    metadata = db.MetaData()
 
-    if table_tame in tables:
-        cursor.execute(f"drop table {table_tame}")
+    # SQL Alchemy table instance is passed to the "fill_table" method
+    table_emp = db.Table(table_tame, metadata, autoload=True, autoload_with=executer.engine)
+    metadata.drop_all(executer.engine)
+
+    # cursor.execute('show tables')
+    # tups = cursor.fetchall()
+    # tables = [tup[0] for tup in tups]
+    #
+    # if table_tame in tables:
+    #     cursor.execute(f"drop table {table_tame}")
 
 
 @pytest.fixture(scope="class")
@@ -148,9 +155,9 @@ class TestTools(object):
 
     @staticmethod
     def table_in_db(table_name):
-        executer.cursor.execute('show tables')
-        tups = executer.cursor.fetchall()
-        tables = [tup[0] for tup in tups]
+        # executer.cursor.execute('show tables')
+        # tups = executer.cursor.fetchall()
+        tables =  executer.engine.table_names()
 
         if table_name in tables:
             return True
