@@ -45,12 +45,6 @@ def remove_table(request):
         db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
         metadata.drop_all(executer.engine)
 
-    # cursor.execute('show tables')
-    # tups = cursor.fetchall()
-    # tables = [tup[0] for tup in tups]
-    #
-    # if table_tame in tables:
-    #     cursor.execute(f"drop table {table_tame}")
 
 
 @pytest.fixture(scope="class")
@@ -82,7 +76,6 @@ def create_worker():
     worker_4["name"] = f"John_{random.randint(1,1000)}"
     worker_4["ID"] = str(random.randint(1,1000))
     worker_4["title"] = "QA"
-    worker_4["location"] = "Italy"
 
     return worker_4
 
@@ -91,9 +84,8 @@ def worker_invalid_column_order():
     # Creating new row to be inserted to the table.
     worker_4 = {}
     worker_4["name"] = f"John_{random.randint(1,1000)}"
-    worker_4["ID"] = str(random.randint(1,1000))
-    worker_4["location"] = "Italy"
     worker_4["title"] = "QA"
+    worker_4["ID"] = str(random.randint(1,1000))
 
     return worker_4
 

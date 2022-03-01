@@ -166,7 +166,7 @@ class TestJsonUpload(object):
     @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
     def test_add_data_json(self, create_worker, remove_table):
         """
-        Adding a row and a column to existing table, verifying table content was updated.
+        Adding a row  to existing table, verifying table content was updated.
 
         """
         test_name = "Adding a row and a column to existing table, verifying table content was updated."
@@ -184,7 +184,7 @@ class TestJsonUpload(object):
 
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
-        assert response_parsed['response'] == 'DB was successfully updated'
+        assert response_parsed['response'] == 'DB table workers was successfully updated'
 
         # Getting table content from DB
         db_table_content = self.executer.get_table_content("workers")
@@ -197,14 +197,7 @@ class TestJsonUpload(object):
         for i in workers_json_valid_content["workers"]:
             uploaded_json_values.append(list(i.values()))
 
-        uploaded_json_values[0].append(None)
-
         uploaded_json_keys.append(list(i.keys()))
-
-        print("Table content:\n")
-        print(db_table_content)
-        print("JSON values:\n")
-        print(uploaded_json_values)
 
         # Verifying uploaded content
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
