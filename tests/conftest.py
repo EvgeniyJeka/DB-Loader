@@ -14,18 +14,31 @@ base_url = config.get("URL", "base_url")
 
 executer = Executer("./config.ini")
 
+worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
+worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
+workers_json_valid_content = {"workers": [worker_1, worker_2]}
+
+worker_1 = {"name": "Mike", "ID": '920', "title": "Product Manager"}
+workers_single_worker_content = {"workers": [worker_1]}
+
+worker_3 = {"name": "Alla", "ID": "651", "title": "Delivery Manager"}
+worker_4 = {"name": "Alex", "ID": "1011", "title": "RnD Director"}
+workers_json_overwritten_content = {"workers": [worker_3, worker_4]}
+
+
+
+
 
 @pytest.fixture(scope = "function")
 def remove_table(request):
-    table_tame = request.param[0]
+    table_name = request.param[0]
 
-    cursor = executer.cursor
+    tables = executer.engine.table_names()
 
-    metadata = db.MetaData()
-
-    # SQL Alchemy table instance is passed to the "fill_table" method
-    table_emp = db.Table(table_tame, metadata, autoload=True, autoload_with=executer.engine)
-    metadata.drop_all(executer.engine)
+    if table_name in tables:
+        metadata = db.MetaData()
+        db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
+        metadata.drop_all(executer.engine)
 
     # cursor.execute('show tables')
     # tups = cursor.fetchall()

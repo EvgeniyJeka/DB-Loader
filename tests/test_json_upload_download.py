@@ -2,9 +2,10 @@ import pytest
 import requests
 import json
 from Executer import Executer
-from tests.conftest import TestTools
+from tests.conftest import TestTools, workers_json_valid_content, workers_single_worker_content, \
+    workers_json_overwritten_content
 import configparser
-from tests import conftest
+
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -13,7 +14,7 @@ base_url = config.get("URL", "base_url")
 
 class TestJsonUpload(object):
     executer = Executer("./config.ini")
-    content = None
+
 
     @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
     def test_table_creation_json(self, remove_table):
@@ -28,12 +29,7 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/create"
 
-        worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
-        worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
-
-        content = {"workers": [worker_1, worker_2]}
-
-        TestJsonUpload.content = content
+        content = workers_json_valid_content
 
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
@@ -44,7 +40,8 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    def test_table_created_negative_json(self):
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_table_created_negative_json(self, remove_table):
         """
          Verify an error message is received when trying to create a table while table with such name already exists.
          Trying to create a table with "add_json" action and "create" action type.
@@ -55,9 +52,15 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/create"
 
-        worker_1 = {"name": "Anna", "ID": 352, "title": "Designer"}
-        content = {"workers": [worker_1]}
+        content = workers_json_valid_content
 
+        # Creating the table
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['response'] == 'DB was successfully updated'
+
+        # Trying to create another table with the same name
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
 
@@ -67,13 +70,23 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    def test_uploaded_table_content_json(self):
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_uploaded_table_content_json(self, remove_table):
         """
         Verifies the content of the uploaded file.
 
         """
         test_name = "SQL DB content is identical to uploaded JSON content - XLSX extension."
         print(f"-----------------Test: '{test_name}'-----------------")
+
+        url = base_url + "add_json/create"
+
+        content = workers_json_valid_content
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['response'] == 'DB was successfully updated'
 
         # Getting table content from DB
         db_table_content = self.executer.get_table_content("workers")
@@ -83,7 +96,7 @@ class TestJsonUpload(object):
         uploaded_json_values = []
         uploaded_json_keys = []
 
-        for i in TestJsonUpload.content["workers"]:
+        for i in workers_json_valid_content['workers']:
             uploaded_json_values.append(list(i.values()))
 
         uploaded_json_keys.append(list(i.keys()))
@@ -105,10 +118,16 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/overwrite"
 
-        worker_1 = {"name": "Mike", "ID": '920', "title": "Product Manager"}
-        content = {"workers": [worker_1]}
+        content = workers_json_valid_content
 
-        TestJsonUpload.content = content
+        # Creating the table
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['response'] == 'DB was successfully updated'
+
+        # Overwrite an existing table
+        content = workers_single_worker_content
 
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
