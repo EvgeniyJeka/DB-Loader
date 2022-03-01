@@ -26,7 +26,12 @@ worker_4 = {"name": "Alex", "ID": "1011", "title": "RnD Director"}
 workers_json_overwritten_content = {"workers": [worker_3, worker_4]}
 
 
-
+def create_workers_test_table(content):
+    url = base_url + "add_json/overwrite"
+    # Creating the table
+    response = requests.post(url, json=content)
+    response_parsed = json.loads(response.content)
+    assert response_parsed['response'] == 'DB was successfully updated', "Failed to create the 'workers' test table"
 
 
 @pytest.fixture(scope = "function")

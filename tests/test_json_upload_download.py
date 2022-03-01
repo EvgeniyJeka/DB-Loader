@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools, workers_json_valid_content, workers_single_worker_content, \
-    workers_json_overwritten_content
+    workers_json_overwritten_content, create_workers_test_table
 import configparser
 
 
@@ -52,16 +52,11 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/create"
 
-        content = workers_json_valid_content
-
         # Creating the table
-        response = requests.post(url, json=content)
-        response_parsed = json.loads(response.content)
-
-        assert response_parsed['response'] == 'DB was successfully updated'
+        create_workers_test_table(workers_json_valid_content)
 
         # Trying to create another table with the same name
-        response = requests.post(url, json=content)
+        response = requests.post(url, json=workers_json_valid_content)
         response_parsed = json.loads(response.content)
 
         assert 'error' in response_parsed.keys(), "Error - incorrect response from the server."
@@ -79,14 +74,7 @@ class TestJsonUpload(object):
         test_name = "SQL DB content is identical to uploaded JSON content - XLSX extension."
         print(f"-----------------Test: '{test_name}'-----------------")
 
-        url = base_url + "add_json/create"
-
-        content = workers_json_valid_content
-
-        response = requests.post(url, json=content)
-        response_parsed = json.loads(response.content)
-
-        assert response_parsed['response'] == 'DB was successfully updated'
+        create_workers_test_table(workers_json_valid_content)
 
         # Getting table content from DB
         db_table_content = self.executer.get_table_content("workers")
@@ -107,10 +95,11 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    # Overwrite an existing table by sending xlsx file
-    def test_overwrite_existing_table_json(self):
+    # Overwrite an existing table by sending JSON with the same name
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_overwrite_existing_table_json(self, remove_table):
         """
-        Overwrite an existing table by sending file with the same name and using "overwrite" action type.
+        Overwrite an existing table by sending JSON with the same name and using "overwrite" action type.
 
         """
         test_name = "Overwrite an existing table by sending JSON."
@@ -118,16 +107,11 @@ class TestJsonUpload(object):
 
         url = base_url + "add_json/overwrite"
 
-        content = workers_json_valid_content
-
         # Creating the table
-        response = requests.post(url, json=content)
-        response_parsed = json.loads(response.content)
-
-        assert response_parsed['response'] == 'DB was successfully updated'
+        create_workers_test_table(workers_json_valid_content)
 
         # Overwrite an existing table
-        content = workers_single_worker_content
+        content = workers_json_overwritten_content
 
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
@@ -137,13 +121,28 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    def test_verify_content_overwritten_table_json(self):
+        # Overwrite an existing table by sending JSON with the same name
+
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_verify_content_overwritten_table_json(self, remove_table):
         """
         Verify table content after it was overwritten.
 
         """
         test_name = "Verify table content after it was overwritten."
         print(f"-----------------Test: '{test_name}'-----------------")
+
+        url = base_url + "add_json/overwrite"
+
+        # Creating the 'workers' table
+        create_workers_test_table(workers_json_valid_content)
+
+        # Overwrite an existing table
+        content = workers_json_overwritten_content
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+        assert response_parsed['response'] == 'DB was successfully updated'
 
         # Getting table content from DB
         db_table_content = self.executer.get_table_content("workers")
@@ -153,7 +152,7 @@ class TestJsonUpload(object):
         uploaded_json_values = []
         uploaded_json_keys = []
 
-        for i in TestJsonUpload.content["workers"]:
+        for i in workers_json_overwritten_content["workers"]:
             uploaded_json_values.append(list(i.values()))
 
         uploaded_json_keys.append(list(i.keys()))
@@ -164,7 +163,8 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    def test_add_data_json(self, create_worker):
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_add_data_json(self, create_worker, remove_table):
         """
         Adding a row and a column to existing table, verifying table content was updated.
 
@@ -172,7 +172,11 @@ class TestJsonUpload(object):
         test_name = "Adding a row and a column to existing table, verifying table content was updated."
         print(f"-----------------Test: '{test_name}'-----------------")
 
-        TestJsonUpload.content['workers'].append(create_worker)
+        # Creating the 'workers' table
+        create_workers_test_table(workers_json_valid_content)
+
+        # Adding a new worker
+        workers_json_valid_content['workers'].append(create_worker)
 
         # Sending the request
         url = base_url + "add_json/add_data"
@@ -190,12 +194,17 @@ class TestJsonUpload(object):
         uploaded_json_values = []
         uploaded_json_keys = []
 
-        for i in TestJsonUpload.content["workers"]:
+        for i in workers_json_valid_content["workers"]:
             uploaded_json_values.append(list(i.values()))
 
         uploaded_json_values[0].append(None)
 
         uploaded_json_keys.append(list(i.keys()))
+
+        print("Table content:\n")
+        print(db_table_content)
+        print("JSON values:\n")
+        print(uploaded_json_values)
 
         # Verifying uploaded content
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."

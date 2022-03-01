@@ -103,26 +103,47 @@ class Executer(object):
             return {"error": f"Illegal action type - {action_type}"}
 
     def overwrite_table(self, file_name, column_names, table_data):
-        return self.add_data_existing_table(file_name, column_names, table_data, skip_columns_verification=True)
+        """
+        This method can be used to overwrite an existing table. Table structure can be changed.
+        The original table is removed, and new one is created and filled
+        :param file_name:  Table name, str
+        :param column_names: Table columns list
+        :param table_data: a list - each element will become a record in the table
+        :return:
+        """
 
-        # cursor = self.cursor
-        #
-        # cursor.execute('show tables')
-        # tups = cursor.fetchall()
-        #
-        # tables = [tup[0] for tup in tups]
-        #
-        # if file_name in tables:
-        #     cursor.execute(f"drop table {file_name}")
-        #
-        # added_columns = " varchar(255),".join(column_names)
-        # query = f"CREATE TABLE {file_name} ({added_columns} " + "varchar(255)" + ");"
-        # logging.info(f"Executing query |{query}|")
-        # cursor.execute(query)
+        logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
+        tables = self.engine.table_names()
 
-        #return self.fill_table(file_name, table_data)
+        # Verifying the table exist - if it doesn't creating a new table from scratch
+        if file_name not in tables:
+            logging.warning(f"Table {file_name} does not exists in DB - can't update or overwrite")
+            return self.create_table_from_scratch(file_name, column_names, table_data)
+
+        metadata = db.MetaData()
+
+        # Creating table - column names are provided in a tuple
+        columns_list = [db.Column(x, db.String(255)) for x in column_names]
+
+        # SQL Alchemy table instance is passed to the "fill_table" method
+        table_emp = db.Table(file_name, metadata, *columns_list, extend_existing=True)
+        metadata.drop_all(self.engine)
+        metadata.create_all(self.engine)
+
+        logging.info(f"{file_name} - table with such name already exists.")
+        logging.info(f"Log: Table data - {table_data}")
+
+        return self.fill_table(file_name, table_data, table_emp, column_names)
 
     def fill_table(self, file_name, table_data, table_emp, column_names):
+        """
+         This method can be used to fill a table with data
+        :param file_name:  Table name, str
+        :param table_data: a list - each element will become a record in the table
+        :param table_emp: Sql alchemy instance that represents the table
+        :param column_names: Table columns list
+        :return:
+        """
 
         logging.info(f"Executer: Filling the table '{file_name}' with data")
 
@@ -141,6 +162,13 @@ class Executer(object):
         return {"response": "DB was successfully updated"}
 
     def create_table_from_scratch(self, file_name, column_names, table_data):
+        """
+        This method can be used to create a new SQL table from scratch.
+        :param file_name: Table name, str
+        :param column_names: Table columns list
+        :param table_data: table data, list - each element will become a record in the table
+        :return: dict (confirmation message or error message)
+        """
 
         logging.info(f"Executer: Creating a new table from scratch -  '{file_name}'")
         tables = self.engine.table_names()
@@ -162,39 +190,62 @@ class Executer(object):
 
         return self.fill_table(file_name, table_data, table_emp, column_names)
 
-    def add_data_existing_table(self, file_name, column_names, table_data, skip_columns_verification=None):
+    def add_data_existing_table(self, file_name, column_names, table_data):
+        """
+        This method can be used to add records to an existing table. Added record must match the table structure.
+        :param file_name: Table name, str
+        :param column_names: Table columns, list
+        :param table_data: Records that should be added, list or tuple
+        :return: dict (confirmation message)
+        """
 
         logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
+
+        if isinstance(self.validating_record_before_adding(file_name, column_names, table_data), dict):
+            return self.validating_record_before_adding(file_name, column_names, table_data)
+
+        # Inserting the records
+        metadata = db.MetaData()
+        updated_table = db.Table(file_name, metadata, autoload=True, autoload_with=self.engine)
+
+        added_values = []
+
+        for row in table_data:
+            element = {}
+            for column_number in range(0, len(column_names)):
+                element[column_names[column_number]] = row[column_number]
+
+            added_values.append(element)
+
+        query = updated_table.insert().values([*added_values])
+        self.cursor.execute(query)
+
+        return {"response": f"DB table {file_name} was successfully updated"}
+
+    def validating_record_before_adding(self, file_name, column_names, table_data):
+        """
+         This method is used to verify that the provided record can be added to the given table.
+         The table must exist in the DB.
+         The columns amount in the record must be identical to the columns amount in the table
+        :param file_name: table name, str
+        :param column_names: columns list, list
+        :param table_data: , added record (list or tuple)
+        :return: error message (dict) on error
+        """
+
         tables = self.engine.table_names()
 
-        # Verifying the table exist - if it doesn't creating a new table from scratch
+        # Verifying the table exist - if it doesn't it can't be updated
         if file_name not in tables:
             logging.warning(f"Table {file_name} does not exists in DB - can't update or overwrite")
-            return self.create_table_from_scratch(file_name, column_names, table_data)
+            return {"error": f"Table {file_name} does not exists in DB - can't update or overwrite"}
 
-        # Skipping this verification when overwriting a table
-        if skip_columns_verification is None:
-            # Verifying provided column names against current column names.
-            columns_to_add = self.columns_verification(self.get_columns(file_name), column_names)
+        table_columns_amount = len(column_names)
 
-            # Provided column names don't contain the current table columns or their order is different.
-            if columns_to_add is False:
-                return {"error": "The original table columns can't be removed/replaced and their order can't be modified."}
-
-        metadata = db.MetaData()
-
-        # Creating table - column names are provided in a tuple
-        columns_list = [db.Column(x, db.String(255)) for x in column_names]
-
-        # SQL Alchemy table instance is passed to the "fill_table" method
-        table_emp = db.Table(file_name, metadata, *columns_list, extend_existing=True)
-        metadata.drop_all(self.engine)
-        metadata.create_all(self.engine)
-
-        logging.info(f"{file_name} - table with such name already exists.")
-        logging.info(f"Log: Table data - {table_data}")
-
-        return self.fill_table(file_name, table_data, table_emp, column_names)
+        # Verifying the provided data can be inserted into the table
+        for record in table_data:
+            if len(record) != table_columns_amount:
+                return {"error": "Column count doesn't match value count"}
 
     def get_columns(self, table):
         """
@@ -223,52 +274,44 @@ class Executer(object):
         return result
 
 
-    def columns_verification(self, existing_columns: list, new_columns: list):
-        """
-        Checks for the difference between current and suggested table columns.
-        :param existing_columns: list
-        :param new_columns: list
-        :return: list
-        """
-        if len(existing_columns) > len(new_columns):
-            return False
-
-        for i in range(len(existing_columns)):
-            if existing_columns[i] != new_columns[i]:
-                return False
-
-        if len(new_columns) > len(existing_columns):
-            return new_columns[len(existing_columns):]
-
-        return True
 
 
 if __name__ == "__main__":
+    pass
 
 
-    executer = Executer("./config.ini")
-    file_name = 'cars'
+    # executer = Executer("./config.ini")
+    # file_name = 'cars'
     # column_names = ("car", "speed", "location")
     # table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
     #
     # # Creating from scratch and filling SQL table
     # print(executer.create_table_from_scratch(file_name, column_names, table_data))
+    # added_data = (('Nissan', '80', 'New York'),)
     #
+    #
+    # # Adding record to an existing table
+    # added_data_ = (('Nissan', '80', 'New York'), ('Subaru', '98', 'New York'))
+    # print(executer.add_data_existing_table(file_name, column_names, added_data_))
+
+
+
+
     # # Adding columns to an existing table: added column "condition"
-    column_names = ("car", "speed", "location", "condition")
+    #column_names = ("car", "speed", "location", "condition")
     # table_data_updated = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
     # print(executer.add_data_existing_table(file_name, column_names, table_data_updated))
-
-    # Get table columns as list
-    columns = executer.get_columns(file_name)
-    print(columns)
-
-    # Overwriting an existing table
-    table_data_updated_ = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Good"))
-    print(executer.overwrite_table(file_name, column_names, table_data_updated_))
-
-    # Getting table content
-    print(executer.get_table_content('cars'))
+    #
+    # # Get table columns as list
+    # columns = executer.get_columns(file_name)
+    # print(columns)
+    #
+    # # Overwriting an existing table
+    # table_data_updated_ = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Good"))
+    # print(executer.overwrite_table(file_name, column_names, table_data_updated_))
+    #
+    # # Getting table content
+    # print(executer.get_table_content('cars'))
 
 
 

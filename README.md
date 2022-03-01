@@ -106,9 +106,10 @@ and save the provided data.
 already exists (otherwise a new table is created). Can be used to update
 the SQL table after changes were made in CSV/XLSX/XLS file.
 
-3. **"Add data"** - add additional row or column to an existing table.
-Only the added content must be sent. To make a correction in a table that 
-was previously uploaded it is better to use the "Overwrite" action type.
+3. **"Add data"** - add additional record to an existing table.
+Only the added content must be sent. 
+Table structure can't be changed via this method (new columns can't be added), 
+to make a correction in a table that was previously uploaded it is better to use the "Overwrite" action type.
 
 
 # How To 
