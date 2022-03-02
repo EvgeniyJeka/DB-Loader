@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from Executer import Executer
 import requests
@@ -34,16 +36,17 @@ def create_workers_test_table(content):
     assert response_parsed['response'] == 'DB was successfully updated', "Failed to create the 'workers' test table"
 
 
-@pytest.fixture(scope = "function")
+@pytest.fixture(scope="function")
 def remove_table(request):
     table_name = request.param[0]
 
     tables = executer.engine.table_names()
 
     if table_name in tables:
-        metadata = db.MetaData()
-        db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
-        metadata.drop_all(executer.engine)
+        executer.cursor.execute(f"drop table {table_name}")
+        # metadata = db.MetaData()
+        # db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
+        # metadata.drop_all(executer.engine)
 
 
 
