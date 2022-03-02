@@ -80,16 +80,35 @@ def create_worker():
     return worker_4
 
 @pytest.fixture(scope= "function")
-def worker_invalid_column_order():
+def worker_invalid_column_name():
     # Creating new row to be inserted to the table.
     worker_4 = {}
     worker_4["name"] = f"John_{random.randint(1,1000)}"
-    worker_4["title"] = "QA"
+    worker_4["position"] = "QA"
     worker_4["ID"] = str(random.randint(1,1000))
 
     return worker_4
 
-@pytest.fixture(scope = "class")
+@pytest.fixture(scope= "function")
+def worker_column_missing():
+    # Creating new row to be inserted to the table.
+    worker_5 = {}
+    worker_5["name"] = f"John_{random.randint(1,1000)}"
+    worker_5["ID"] = str(random.randint(1,1000))
+
+    return worker_5
+
+
+@pytest.fixture(scope="function")
+def worker_column_added():
+    # Creating new row to be inserted to the table.
+    worker_6 = {"name": f"John_{random.randint(1, 1000)}", "position": "QA", "ID": str(random.randint(1, 1000)),
+                "location": "Italy"}
+
+    return worker_6
+
+
+@pytest.fixture(scope="class")
 def table_add_data_expected_result(request):
     update_file_path = request.param[0]
     table_name = request.param[1]

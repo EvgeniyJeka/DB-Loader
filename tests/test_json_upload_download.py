@@ -204,24 +204,75 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    def test_add_data_negative_json(self, worker_invalid_column_order):
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_add_data_negative_json_column_renamed(self, remove_table, worker_invalid_column_name):
         """
-        Verifying illegal table modification is blocked. When adding data rows and columns can be only added.
+        Verifying illegal table modification is blocked - existing columns names can't be modified
 
         """
-        test_name = "Adding a row and a column to existing table - negative test."
+        test_name = "Adding new record to an existing table: existing columns can't be renamed - negative test."
         print(f"-----------------Test: '{test_name}'-----------------")
+
+        # Creating the 'workers' table
+        create_workers_test_table(workers_json_valid_content)
 
         # Data addition can't be performed, since the rows of the table in this file are ordered differently.
         url = base_url + "add_json/add_data"
 
-        content = {"workers": [worker_invalid_column_order]}
+        content = {"workers": [worker_invalid_column_name]}
 
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
 
-        assert response_parsed['error'] == \
-               "The original table columns can't be removed/replaced and their order can't be modified."
+        assert response_parsed['error'] == "The original table columns can't be removed or replaced"
+
+        print(f"-----------------Test '{test_name}' passed-----------------\n")
+
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_add_data_negative_json_column_removed(self, remove_table, worker_column_missing):
+        """
+        Verifying illegal table modification is blocked - existing columns  can't be removed
+
+        """
+        test_name = "Adding new record to an existing table: existing columns can't be removed - negative test."
+        print(f"-----------------Test: '{test_name}'-----------------")
+
+        # Creating the 'workers' table
+        create_workers_test_table(workers_json_valid_content)
+
+        # Data addition can't be performed, since the rows of the table in this file are ordered differently.
+        url = base_url + "add_json/add_data"
+
+        content = {"workers": [worker_column_missing]}
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['error'] == "The original table columns can't be removed or replaced"
+
+        print(f"-----------------Test '{test_name}' passed-----------------\n")
+
+    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_add_data_negative_json_column_added(self, remove_table, worker_column_added):
+        """
+        Verifying illegal table modification is blocked - columns can't be added to a table on record insertion
+
+        """
+        test_name = "Adding new record to an existing table: new columns can't be added  - negative test."
+        print(f"-----------------Test: '{test_name}'-----------------")
+
+        # Creating the 'workers' table
+        create_workers_test_table(workers_json_valid_content)
+
+        # Data addition can't be performed, since the rows of the table in this file are ordered differently.
+        url = base_url + "add_json/add_data"
+
+        content = {"workers": [worker_column_added]}
+
+        response = requests.post(url, json=content)
+        response_parsed = json.loads(response.content)
+
+        assert response_parsed['error'] == "The original table columns can't be removed or replaced"
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
@@ -266,9 +317,6 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-
-
-    # Next test:
     # Download table content as JSON, verify against DB table.
     @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']],indirect=True)
     def test_table_as_json(self, prepare_table):

@@ -201,6 +201,7 @@ class Executer(object):
 
         logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
 
+        # Validating input
         if isinstance(self.validating_record_before_adding(file_name, column_names, table_data), dict):
             return self.validating_record_before_adding(file_name, column_names, table_data)
 
@@ -242,10 +243,20 @@ class Executer(object):
 
         table_columns_amount = len(column_names)
 
+        # Validating provided column names
+        table_columns = self.get_columns(file_name)
+        if table_columns != column_names:
+            logging.error(f"Table columns: {table_columns}, provided column names: {column_names}")
+            return {"error": "The original table columns can't be removed or replaced"}
+
         # Verifying the provided data can be inserted into the table
         for record in table_data:
             if len(record) != table_columns_amount:
                 return {"error": "Column count doesn't match value count"}
+
+            #print(f"Record: {record}, column names: {column_names}, table data: {table_data}")
+
+
 
     def get_columns(self, table):
         """
