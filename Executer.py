@@ -70,6 +70,19 @@ class Executer(object):
             logging.critical("SQL DB - Failed to connect, reason is unclear")
             logging.critical(e)
 
+    def validate_args(self, received_arg):
+        if isinstance(received_arg, str):
+            return len(received_arg.split(" ")) == 1 and received_arg != ';'
+
+        elif isinstance(received_arg, list):
+            for element in received_arg:
+                forbidden_cars = ["0x00", "\b", "\n", "\r", "\t", "\Z", "\%", "\\", '"', ";"]
+
+                for char in forbidden_cars:
+                    if char in element:
+                        return False
+            return True
+
     def create_fill_table(self, file_name, column_names, table_data, action_type):
         """
         This method is used to handle several scenarios:
@@ -85,7 +98,12 @@ class Executer(object):
         :param action_type: supported action type, string - "create", "overwrite_1" or "add_data".
         :return: success message on success, error message on error - JSON.
         """
-        cursor = self.cursor
+
+        unchecked_input = [file_name, column_names, table_data]
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't create/update a table - input is invalid"}
 
         # Upload a new table with the name of an existing table
         if action_type == "overwrite":
@@ -169,6 +187,12 @@ class Executer(object):
         :param table_data: table data, list - each element will become a record in the table
         :return: dict (confirmation message or error message)
         """
+
+        unchecked_input = file_name, table_data
+        input_check = self.validate_args(unchecked_input)
+
+        if input_check is False:
+            return {"error": f"Can't update a table - input is invalid"}
 
         logging.info(f"Executer: Creating a new table from scratch -  '{file_name}'")
         tables = self.engine.table_names()
@@ -288,17 +312,18 @@ class Executer(object):
 
 
 if __name__ == "__main__":
-    pass
 
 
-    # executer = Executer("./config.ini")
-    # file_name = 'cars'
-    # column_names = ("car", "speed", "location")
-    # table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
-    #
-    # # Creating from scratch and filling SQL table
-    # print(executer.create_table_from_scratch(file_name, column_names, table_data))
-    # added_data = (('Nissan', '80', 'New York'),)
+    executer = Executer("./config.ini")
+    file_name = '"; select true;"'
+    column_names = ("car", "speed", "location")
+    table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
+
+    #print(executer.validate_args([file_name, column_names, table_data]))
+
+    # Creating from scratch and filling SQL table
+    print(executer.create_table_from_scratch(file_name, column_names, table_data))
+    added_data = (('Nissan', '80', 'New York'),)
     #
     #
     # # Adding record to an existing table

@@ -359,12 +359,10 @@ class TestJsonUpload(object):
 
         content = {"; select true;": [worker_1, worker_2]}
 
-        TestJsonUpload.content = content
-
         response = requests.post(url, json=content)
         response_parsed = json.loads(response.content)
 
-        assert response_parsed['error'] == "Can't create a new table - input is invalid",\
+        assert response_parsed['error'] == "Can't create/update a table - input is invalid",\
             "SQL injection in JSON file name wasn't blocked"
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
