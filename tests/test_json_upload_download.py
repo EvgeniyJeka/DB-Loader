@@ -96,12 +96,13 @@ class TestJsonUpload(object):
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
     # Overwrite an existing table by sending JSON with the same name
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_overwrite_existing_table_json(self, remove_table):
+    def test_overwrite_existing_table_json(self):
         """
         Overwrite an existing table by sending JSON with the same name and using "overwrite" action type.
 
         """
+        self.executer.cursor.execute("drop table workers")
+
         test_name = "Overwrite an existing table by sending JSON."
         print(f"-----------------Test: '{test_name}'-----------------")
 
@@ -123,12 +124,12 @@ class TestJsonUpload(object):
 
         # Overwrite an existing table by sending JSON with the same name
 
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_verify_content_overwritten_table_json(self, remove_table):
+    def test_verify_content_overwritten_table_json(self):
         """
         Verify table content after it was overwritten.
 
         """
+        self.executer.cursor.execute("drop table workers")
         test_name = "Verify table content after it was overwritten."
         print(f"-----------------Test: '{test_name}'-----------------")
 
@@ -163,12 +164,13 @@ class TestJsonUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_add_data_json(self, create_worker, remove_table):
+
+    def test_add_data_json(self, create_worker):
         """
         Adding a row  to existing table, verifying table content was updated.
 
         """
+        self.executer.cursor.execute("drop table workers")
         test_name = "Adding a row and a column to existing table, verifying table content was updated."
         print(f"-----------------Test: '{test_name}'-----------------")
 
@@ -204,12 +206,13 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_add_data_negative_json_column_renamed(self, remove_table, worker_invalid_column_name):
+
+    def test_add_data_negative_json_column_renamed(self, worker_invalid_column_name):
         """
         Verifying illegal table modification is blocked - existing columns names can't be modified
 
         """
+        self.executer.cursor.execute("drop table workers")
         test_name = "Adding new record to an existing table: existing columns can't be renamed - negative test."
         print(f"-----------------Test: '{test_name}'-----------------")
 
@@ -317,38 +320,15 @@ class TestJsonUpload(object):
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    # Download table content as JSON, verify against DB table.
-    @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']],indirect=True)
-    def test_table_as_json(self, prepare_table):
 
-        # Sending the request
-        url = base_url + "table_to_json/cities_test"
-
-        response = requests.get(url=url)
-        response_parsed = json.loads(response.content)
-
-        db_table_content = self.executer.get_table_content("cities_test")
-        db_table_content = [list(x) for x in db_table_content]
-        db_table_columns = self.executer.get_columns("cities_test")
-
-        uploaded_json_values = []
-        uploaded_json_keys = []
-
-        for i in response_parsed:
-            uploaded_json_values.append(list(i.values()))
-
-        uploaded_json_keys.append(list(i.keys()))
-
-        assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
-        assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
-
-    @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
-    def test_sql_injection_table_name_blocked(self, remove_table):
+    #@pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
+    def test_sql_injection_table_name_blocked(self):
         """
          Verify SQL injection in file name is blocked
         :param remove_table: fixture used to remove a table from DB
 
         """
+        self.executer.cursor.execute("drop table workers")
         test_name = "Verify SQL injection in file name is blocked. Sending JSON."
         print(f"\n-----------------Test: '{test_name}'-----------------")
 

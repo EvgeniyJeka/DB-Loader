@@ -27,6 +27,22 @@ worker_3 = {"name": "Alla", "ID": "651", "title": "Delivery Manager"}
 worker_4 = {"name": "Alex", "ID": "1011", "title": "RnD Director"}
 workers_json_overwritten_content = {"workers": [worker_3, worker_4]}
 
+city_1 = {"City": "Tel Aviv", "Color": "Green", "ID": "101"}
+city_2 = {"City": "Petah Tikva", "Color": "Red", "ID": "201"}
+city_3 = {"City": "Rishon LeZion", "Color": "Purple", "ID": "301"}
+city_4 = {"City": "Haifa", "Color": "Blue", "ID": "401"}
+city_5 = {"City": "Jerusalem", "Color": "White", "ID": "501"}
+city_6 = {"City": "Rome", "Color": "Yellow", "ID": "121"}
+cities_json_content = {"cities_test": [city_1, city_2, city_3, city_4, city_5, city_6]}
+
+
+def create_cities_test_table(content):
+    url = base_url + "add_json/overwrite"
+    # Creating the table
+    response = requests.post(url, json=content)
+    response_parsed = json.loads(response.content)
+    assert response_parsed['response'] == 'DB was successfully updated', "Failed to create the 'workers' test table"
+
 
 def create_workers_test_table(content):
     url = base_url + "add_json/overwrite"
