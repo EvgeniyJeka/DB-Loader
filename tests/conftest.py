@@ -36,6 +36,11 @@ city_6 = {"City": "Rome", "Color": "Yellow", "ID": "121"}
 cities_json_content = {"cities_test": [city_1, city_2, city_3, city_4, city_5, city_6]}
 
 
+add_records_xlsx_files_expected_result = [['New - York', 'English'], ['Moscow', 'Russian'],
+                                          ['Jerusalem', 'Hebrew'], ['German', 'Dutch'],
+                                          ['Budapest', 'Hungarian'], ['Tel Aviv', 'Hebrew'], ['Beijing', 'Chinese']]
+
+
 def create_cities_test_table(content):
     url = base_url + "add_json/overwrite"
     # Creating the table
@@ -78,6 +83,7 @@ def prepare_table(request):
     try:
         response = requests.post(url, files=files)
         response_parsed = json.loads(response.content)
+        print(response_parsed)
         assert response_parsed['response'] == 'DB was successfully updated'
 
     except json.decoder.JSONDecodeError as e:

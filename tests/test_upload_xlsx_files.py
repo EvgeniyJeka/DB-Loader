@@ -2,7 +2,7 @@ import pytest
 import requests
 import json
 from Executer import Executer
-from tests.conftest import TestTools
+from tests.conftest import TestTools, add_records_xlsx_files_expected_result
 import configparser
 
 config = configparser.ConfigParser()
@@ -13,19 +13,15 @@ base_url = config.get("URL", "base_url")
 class TestFileUpload(object):
     executer = Executer("./config.ini")
 
-
-    # Adding a row and a column to existing table, verifying table content was updated.
-    @pytest.mark.parametrize("prepare_table", [['./test_files/overwrite_1/cities_test.xlsx']])
-    @pytest.mark.parametrize("table_add_data_expected_result",
-                             [["./test_files/overwrite_2/cities_test.xlsx", "cities_test"]], indirect=True)
-    def test_add_data(self, prepare_table, table_add_data_expected_result):
+    @pytest.mark.parametrize("prepare_table", [['./test_files/overwrite_1/cities_test.xlsx']], indirect=True)
+    def test_add_data(self, prepare_table):
         """
-        Adding a row and a column to existing table, verifying table content was updated.
+        Adding several records  to an existing table, verifying table content was updated.
 
         :param prepare_table: fixture used to set precondition.
-        :param table_add_data_expected_result: fixture used to set precondition.
+
         """
-        test_name = "Adding a row and a column to existing table, verifying table content was updated."
+        test_name = "Adding several records  to an existing table, verifying table content was updated.."
         print(f"-----------------Test: '{test_name}'-----------------")
 
         # Updating the table via service method
@@ -37,24 +33,23 @@ class TestFileUpload(object):
         try:
             response = requests.post(url, files=files)
             response_parsed = json.loads(response.content)
-            assert response_parsed['response'] == 'DB was successfully updated', "Error - add data request denied"
-
+            print(response_parsed)
+            assert response_parsed['response'] == 'DB table cities_test was successfully updated', \
+                "Error - add data request denied"
         finally:
             fin.close()
 
         # Verifying the update in DB
         db_table_content = self.executer.get_table_content("cities_test")
         db_table_content = [list(x) for x in db_table_content]
-        db_table_columns = self.executer.get_columns("cities_test")
 
-        assert db_table_content == table_add_data_expected_result["expected_table_content"], \
+        assert db_table_content == add_records_xlsx_files_expected_result, \
             "Table content wasn't updated as expected."
-        assert db_table_columns == table_add_data_expected_result["expected_table_columns"], \
-            "Table columns weren't updated as expected."
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    def test_add_data_negative(self):
+    @pytest.mark.parametrize("prepare_table", [['./test_files/overwrite_1/cities_test.xlsx']], indirect=True)
+    def test_add_data_negative(self, prepare_table):
         """
         Verifying illegal table modification is blocked. When adding data rows and columns can be only added.
 
@@ -79,44 +74,7 @@ class TestFileUpload(object):
 
         print(f"-----------------Test '{test_name}' passed-----------------\n")
 
-    @pytest.mark.parametrize("remove_table", [["cities_test"]], indirect=True)
-    def test_overwrite_non_existing(self, remove_table):
-        """
-        Verifying new table is created when trying to overwrite non-existing table.
-        :param remove_table: fixture used to set precondition.
-        """
-        test_name = "Overwriting non-existing table, verifying content."
-        print(f"-----------------Test: '{test_name}'-----------------")
-
-        url = base_url + "add_file/overwrite"
-        fin = open('./test_files/overwrite_1/cities_test.xlsx', 'rb')
-        files = {'file': fin}
-
-        # Performing overwrite procedure - using non-existing table name.
-        try:
-            response = requests.post(url, files=files)
-            response_parsed = json.loads(response.content)
-
-            assert 'response' in response_parsed.keys(), "Error - failed to get confirmation from the server."
-            assert response_parsed['response'] == 'DB was successfully updated'
-            assert TestTools.table_in_db("cities_test") is True, "Error - table wasn't created."
-
-        finally:
-            fin.close()
-
-        # Getting table content from DB
-        db_table_content = self.executer.get_table_content("cities_test")
-        db_table_content = [list(x) for x in db_table_content]
-        db_table_columns = self.executer.get_columns("cities_test")
-
-        # Getting table content from xlsx file used for the test
-        excel_file_content = TestTools.get_excel_file_content("./test_files/overwrite_1/cities_test.xlsx")
-
-        # Verifying uploaded content
-        assert db_table_columns == excel_file_content["table_headers"], "Error - wrong column names."
-        assert db_table_content == excel_file_content["table_content"], "Error - table content doesn't match."
-
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+   
 
     @pytest.mark.parametrize("remove_table", [["invalid_table"]], indirect=True)
     def test_create_invalid_table(self, remove_table):

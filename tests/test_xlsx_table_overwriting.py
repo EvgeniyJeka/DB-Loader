@@ -76,14 +76,18 @@ class TestFileUpload(object):
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
 
-    @pytest.mark.parametrize("remove_table", [["cities_test"]], indirect=True)
-    def test_overwrite_non_existing(self, remove_table):
+    def test_overwrite_non_existing(self):
         """
         Verifying new table is created when trying to overwrite non-existing table.
         :param remove_table: fixture used to set precondition.
         """
         test_name = "Overwriting non-existing table, verifying content."
         print(f"-----------------Test: '{test_name}'-----------------")
+
+        # Removing the 'cities_test' table
+        tables = self.executer.engine.table_names()
+        if 'cities_test' in tables:
+            self.executer.cursor.execute("drop table cities_test")
 
         url = base_url + "add_file/overwrite"
         fin = open('./test_files/overwrite_1/cities_test.xlsx', 'rb')
