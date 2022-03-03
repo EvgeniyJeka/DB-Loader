@@ -59,7 +59,6 @@ def remove_table(request):
     tables = executer.engine.table_names()
 
     if table_name in tables:
-        #executer.cursor.execute(f"drop table {table_name}")
         metadata = db.MetaData()
         db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
         metadata.drop_all(executer.engine)
