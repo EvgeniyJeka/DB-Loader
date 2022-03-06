@@ -107,3 +107,31 @@ class TestFileUpload(object):
             fin.close()
 
         print(f"-----------------Test '{test_name}'' passed-----------------\n")
+
+    @pytest.mark.parametrize("remove_table", [["invalid_table"]], indirect=True)
+    def test_create_invalid_table(self, remove_table):
+        """
+        Verifying table isn't created and error message is presented when sending file with invalid table structure.
+        :param remove_table: fixture used to set precondition.
+        """
+        test_name = "Create table - sending file with invalid content, more columns than column names."
+        print(f"-----------------Test: '{test_name}'-----------------")
+
+        url = base_url + "add_file/create"
+
+        fin = open('./test_files/invalid_table.xlsx', 'rb')
+        files = {'file': fin}
+        try:
+            response = requests.post(url, files=files)
+            response_parsed = json.loads(response.content)
+            print(response_parsed)
+
+            assert response_parsed['error'] == "Invalid args provided, action failed", \
+                "Error - invalid input handling has failed. Error message expected."
+            assert TestTools.table_in_db("invalid_table") is False, \
+                "Error - table created although invalid query was used."
+
+        finally:
+            fin.close()
+
+        print(f"-----------------Test '{test_name}' passed-----------------\n")

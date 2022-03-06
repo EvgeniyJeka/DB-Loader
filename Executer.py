@@ -1,6 +1,7 @@
 import configparser
 import logging
 
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 import sqlalchemy as db
@@ -84,21 +85,24 @@ class Executer(object):
         :param action_type: supported action type, string - "create", "overwrite_1" or "add_data".
         :return: success message on success, error message on error - JSON.
         """
+        try:
+            # Upload a new table with the name of an existing table
+            if action_type == "overwrite":
+                return self.overwrite_table(file_name, column_names, table_data)
 
-        # Upload a new table with the name of an existing table
-        if action_type == "overwrite":
-            return self.overwrite_table(file_name, column_names, table_data)
+            # Create a new table
+            elif action_type == "create":
+                return self.create_table_from_scratch(file_name, column_names, table_data)
 
-        # Create a new table
-        elif action_type == "create":
-            return self.create_table_from_scratch(file_name, column_names, table_data)
+            # Add data to existing table - insert new rows or columns
+            elif action_type == "add_data":
+                return self.add_data_existing_table(file_name, column_names, table_data)
 
-        # Add data to existing table - insert new rows or columns
-        elif action_type == "add_data":
-            return self.add_data_existing_table(file_name, column_names, table_data)
+            else:
+                return {"error": f"Illegal action type - {action_type}"}
 
-        else:
-            return {"error": f"Illegal action type - {action_type}"}
+        except sqlalchemy.exc.ArgumentError:
+            return {"error": f"Invalid args provided, action failed"}
 
     def overwrite_table(self, file_name, column_names, table_data):
         """
