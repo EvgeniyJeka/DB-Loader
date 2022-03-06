@@ -28,7 +28,12 @@ class Executer(object):
         pwd = config.get("SQL_DB", "password")
         db_name = config.get("SQL_DB", "db_name")
 
-        self.cursor, self.engine = self.connect_me(hst, usr, pwd, db_name)
+        try:
+            self.cursor, self.engine = self.connect_me(hst, usr, pwd, db_name)
+
+        except TypeError:
+            logging.critical("SQL DB - Failed to connect, please verify SQL DB container is running")
+
 
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):

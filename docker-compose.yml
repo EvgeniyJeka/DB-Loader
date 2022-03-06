@@ -1,23 +1,10 @@
 version: '3'
 
 networks:
-  mysql:
+  sql_net:
     driver: bridge
 
 services:
-
-  mysql:
-    image: mysql:8.0.27
-    volumes:
-      - "./.mysql-data/db:/var/lib/mysql"
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: sys
-    networks:
-      - mysql
 
   postgres:
     image: postgres:14.1-alpine
@@ -30,7 +17,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     networks:
-      - mysql
+      - sql_net
 
   db_loader:
     image: db_loader_net:latest
@@ -39,9 +26,9 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-     - mysql
+     - postgres
     networks:
-      - mysql
+      - sql_net
 
 volumes:
   db:

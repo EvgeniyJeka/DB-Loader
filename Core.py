@@ -1,8 +1,9 @@
 import csv
+import sqlalchemy
 from Executer import Executer
 import xlrd
 import json
-import pymysql
+from sqlalchemy import exc
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -137,8 +138,9 @@ class Core(object):
             columns = self.executor.get_columns(table_name)
             records = self.executor.get_table_content(table_name)
 
-        except pymysql.err.ProgrammingError:
-            return {"error": "There is no table with such name in this DB."}
+        except sqlalchemy.exc.NoSuchTableError:
+            logging.critical(f"Core: Table {table_name} doesn't exist!")
+            return
 
         result = []
 
