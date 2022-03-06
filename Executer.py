@@ -45,7 +45,8 @@ class Executer(object):
         import sqlalchemy
         try:
 
-            url = f'mysql+pymysql://{usr}:{pwd}@{hst}:3306/{db_name}'
+            url = f'postgresql+psycopg2://{usr}:{pwd}@{hst}:5432/{db_name}'
+            #engine = create_engine('postgresql+psycopg2://scott:tiger@localhost/mydatabase')
 
             # Create an engine object.
             engine = create_engine(url, echo=True)
@@ -286,25 +287,16 @@ class Executer(object):
 
 
 if __name__ == "__main__":
-    pass
+
+    executer = Executer("./config.ini")
+    #
+    file_name = 'cars'
+    column_names = ("car", "speed", "location", "condition")
+    table_data = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
+    # Creating from scratch and filling SQL table
+    print(executer.create_table_from_scratch(file_name, column_names, table_data))
 
 
-    # executer = Executer("./config.ini")
-    #
-    # a = ['workers', ['name', 'ID', 'title'], [['Anna0x00', '352', 'Designer'], ['Boris', '451', 'Front-end Developer']]]
-    # print(executer.validate_args(a))
-
-    # file_name = '"; select true;"'
-    # column_names = ("car", "speed", "location")
-    # table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
-    #
-    # #print(executer.validate_args([file_name, column_names, table_data]))
-    #
-    # # Creating from scratch and filling SQL table
-    # print(executer.create_table_from_scratch(file_name, column_names, table_data))
-    # added_data = (('Nissan', '80', 'New York'),)
-    #
-    #
     # # Adding record to an existing table
     # added_data_ = (('Nissan', '80', 'New York'), ('Subaru', '98', 'New York'))
     # print(executer.add_data_existing_table(file_name, column_names, added_data_))

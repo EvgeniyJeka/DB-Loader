@@ -19,6 +19,19 @@ services:
     networks:
       - mysql
 
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - mysql
+
   db_loader:
     image: db_loader_net:latest
     build: ./
@@ -29,6 +42,10 @@ services:
      - mysql
     networks:
       - mysql
+
+volumes:
+  db:
+    driver: local
       
 
 
