@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from Executer import Executer
 import requests
@@ -6,6 +8,7 @@ import xlrd
 import configparser
 import random
 import csv
+import sqlalchemy as db
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -13,19 +16,58 @@ base_url = config.get("URL", "base_url")
 
 executer = Executer("./config.ini")
 
+worker_1 = {"name": "Anna", "ID": "352", "title": "Designer"}
+worker_2 = {"name": "Boris", "ID": "451", "title": "Front-end Developer"}
+workers_json_valid_content = {"workers": [worker_1, worker_2]}
 
-@pytest.fixture(scope = "function")
+worker_1 = {"name": "Mike", "ID": '920', "title": "Product Manager"}
+workers_single_worker_content = {"workers": [worker_1]}
+
+worker_3 = {"name": "Alla", "ID": "651", "title": "Delivery Manager"}
+worker_4 = {"name": "Alex", "ID": "1011", "title": "RnD Director"}
+workers_json_overwritten_content = {"workers": [worker_3, worker_4]}
+
+city_1 = {"City": "Tel Aviv", "Color": "Green", "ID": "101"}
+city_2 = {"City": "Petah Tikva", "Color": "Red", "ID": "201"}
+city_3 = {"City": "Rishon LeZion", "Color": "Purple", "ID": "301"}
+city_4 = {"City": "Haifa", "Color": "Blue", "ID": "401"}
+city_5 = {"City": "Jerusalem", "Color": "White", "ID": "501"}
+city_6 = {"City": "Rome", "Color": "Yellow", "ID": "121"}
+cities_json_content = {"cities_test": [city_1, city_2, city_3, city_4, city_5, city_6]}
+
+
+add_records_xlsx_files_expected_result = [['New - York', 'English'], ['Moscow', 'Russian'],
+                                          ['Jerusalem', 'Hebrew'], ['German', 'Dutch'],
+                                          ['Budapest', 'Hungarian'], ['Tel Aviv', 'Hebrew'], ['Beijing', 'Chinese']]
+
+
+def create_cities_test_table(content):
+    url = base_url + "add_json/overwrite"
+    # Creating the table
+    response = requests.post(url, json=content)
+    response_parsed = json.loads(response.content)
+    assert response_parsed['response'] == 'DB was successfully updated', "Failed to create the 'workers' test table"
+
+
+def create_workers_test_table(content):
+    url = base_url + "add_json/overwrite"
+    # Creating the table
+    response = requests.post(url, json=content)
+    response_parsed = json.loads(response.content)
+    assert response_parsed['response'] == 'DB was successfully updated', "Failed to create the 'workers' test table"
+
+
+@pytest.fixture(scope="function")
 def remove_table(request):
-    table_tame = request.param[0]
+    table_name = request.param[0]
 
-    cursor = executer.cursor
+    tables = executer.engine.table_names()
 
-    cursor.execute('show tables')
-    tups = cursor.fetchall()
-    tables = [tup[0] for tup in tups]
+    if table_name in tables:
+        metadata = db.MetaData()
+        db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
+        metadata.drop_all(executer.engine)
 
-    if table_tame in tables:
-        cursor.execute(f"drop table {table_tame}")
 
 
 @pytest.fixture(scope="class")
@@ -41,6 +83,7 @@ def prepare_table(request):
     try:
         response = requests.post(url, files=files)
         response_parsed = json.loads(response.content)
+        print(response_parsed)
         assert response_parsed['response'] == 'DB was successfully updated'
 
     except json.decoder.JSONDecodeError as e:
@@ -57,22 +100,39 @@ def create_worker():
     worker_4["name"] = f"John_{random.randint(1,1000)}"
     worker_4["ID"] = str(random.randint(1,1000))
     worker_4["title"] = "QA"
-    worker_4["location"] = "Italy"
 
     return worker_4
 
 @pytest.fixture(scope= "function")
-def worker_invalid_column_order():
+def worker_invalid_column_name():
     # Creating new row to be inserted to the table.
     worker_4 = {}
     worker_4["name"] = f"John_{random.randint(1,1000)}"
+    worker_4["position"] = "QA"
     worker_4["ID"] = str(random.randint(1,1000))
-    worker_4["location"] = "Italy"
-    worker_4["title"] = "QA"
 
     return worker_4
 
-@pytest.fixture(scope = "class")
+@pytest.fixture(scope= "function")
+def worker_column_missing():
+    # Creating new row to be inserted to the table.
+    worker_5 = {}
+    worker_5["name"] = f"John_{random.randint(1,1000)}"
+    worker_5["ID"] = str(random.randint(1,1000))
+
+    return worker_5
+
+
+@pytest.fixture(scope="function")
+def worker_column_added():
+    # Creating new row to be inserted to the table.
+    worker_6 = {"name": f"John_{random.randint(1, 1000)}", "position": "QA", "ID": str(random.randint(1, 1000)),
+                "location": "Italy"}
+
+    return worker_6
+
+
+@pytest.fixture(scope="class")
 def table_add_data_expected_result(request):
     update_file_path = request.param[0]
     table_name = request.param[1]
@@ -148,9 +208,9 @@ class TestTools(object):
 
     @staticmethod
     def table_in_db(table_name):
-        executer.cursor.execute('show tables')
-        tups = executer.cursor.fetchall()
-        tables = [tup[0] for tup in tups]
+        # executer.cursor.execute('show tables')
+        # tups = executer.cursor.fetchall()
+        tables =  executer.engine.table_names()
 
         if table_name in tables:
             return True

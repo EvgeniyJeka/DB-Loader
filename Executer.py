@@ -1,6 +1,11 @@
-import pymysql
 import configparser
 import logging
+
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+import sqlalchemy as db
+from sqlalchemy import exc
 
 
 class Executer(object):
@@ -23,7 +28,7 @@ class Executer(object):
         pwd = config.get("SQL_DB", "password")
         db_name = config.get("SQL_DB", "db_name")
 
-        self.cursor = self.connect_me(hst, usr, pwd, db_name)
+        self.cursor, self.engine = self.connect_me(hst, usr, pwd, db_name)
 
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
@@ -35,46 +40,35 @@ class Executer(object):
         :param usr: user
         :param pwd: password
         :param db_name: DB name
-        :return: mysql cursor
+        :return: SqlAlchemy connection (cursor)
         """
+        import sqlalchemy
         try:
-            conn = pymysql.connect(host=hst, user=usr, password=pwd, autocommit='True')
-            cursor = conn.cursor()
 
-            cursor.execute('show databases')
-            databases = [x[0] for x in cursor.fetchall()]
+            url = f'mysql+pymysql://{usr}:{pwd}@{hst}:3306/{db_name}'
 
-            if db_name in databases:
-                query = f"USE {db_name}"
-                logging.info(f"Executing query |{query}|")
-                cursor.execute(query)
+            # Create an engine object.
+            engine = create_engine(url, echo=True)
 
+            # Create database if it does not exist.
+            if not database_exists(engine.url):
+                create_database(engine.url)
+                cursor = engine.connect()
+                return cursor, engine
             else:
-                query = f"CREATE DATABASE {db_name}"
-                logging.info(f"Executing query | {query}|")
-                cursor.execute(query)
+                # Connect the database if exists.
+                cursor = engine.connect()
+                return cursor, engine
 
         # Wrong Credentials error
-        except pymysql.err.OperationalError as e:
-            logging.critical("SQL DB -  Wrong Credentials or Host")
+        except sqlalchemy.exc.OperationalError as e:
+            logging.critical("SQL DB -  Can't connect, verify credentials and host, verify the server is available")
             logging.critical(e)
 
-        # Wrong DB name error
-        except pymysql.err.InternalError as e:
-            logging.critical("SQL DB - Unknown Database")
+        # General error
+        except Exception as e:
+            logging.critical("SQL DB - Failed to connect, reason is unclear")
             logging.critical(e)
-
-        return cursor
-
-    def validate_args(self, received_arg):
-        if isinstance(received_arg, str):
-            return len(received_arg.split(" ")) == 1 and received_arg != ';'
-
-        elif isinstance(received_arg, list):
-            for element in received_arg:
-                if len(element.split(" ")) != 1 or element == ';':
-                    return False
-            return True
 
     def create_fill_table(self, file_name, column_names, table_data, action_type):
         """
@@ -91,143 +85,187 @@ class Executer(object):
         :param action_type: supported action type, string - "create", "overwrite_1" or "add_data".
         :return: success message on success, error message on error - JSON.
         """
-        cursor = self.cursor
+        try:
+            # Upload a new table with the name of an existing table
+            if action_type == "overwrite":
+                return self.overwrite_table(file_name, column_names, table_data)
 
-        # Upload a new table with the name of an existing table
-        if action_type == "overwrite":
-            return self.overwrite_table(file_name, column_names, table_data)
+            # Create a new table
+            elif action_type == "create":
+                return self.create_table_from_scratch(file_name, column_names, table_data)
 
-        # Create a new table
-        elif action_type == "create":
-            return self.create_table_from_scratch(file_name, column_names, table_data)
+            # Add data to existing table - insert new rows or columns
+            elif action_type == "add_data":
+                return self.add_data_existing_table(file_name, column_names, table_data)
 
-        # Add data to existing table - insert new rows or columns
-        elif action_type == "add_data":
-            return self.add_data_existing_table(file_name, column_names, table_data)
+            else:
+                return {"error": f"Illegal action type - {action_type}"}
 
-        else:
-            return {"error": f"Illegal action type - {action_type}"}
+        except sqlalchemy.exc.ArgumentError:
+            return {"error": f"Invalid args provided, action failed"}
 
     def overwrite_table(self, file_name, column_names, table_data):
-        cursor = self.cursor
+        """
+        This method can be used to overwrite an existing table. Table structure can be changed.
+        The original table is removed, and new one is created and filled
+        :param file_name:  Table name, str
+        :param column_names: Table columns list
+        :param table_data: a list - each element will become a record in the table
+        :return:
+        """
 
-        cursor.execute('show tables')
-        tups = cursor.fetchall()
+        logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
+        tables = self.engine.table_names()
 
-        tables = [tup[0] for tup in tups]
-
-        if file_name in tables:
-            cursor.execute(f"drop table {file_name}")
-
-        added_columns = " varchar(255),".join(column_names)
-        query = f"CREATE TABLE {file_name} ({added_columns} " + "varchar(255)" + ");"
-        logging.info(f"Executing query |{query}|")
-        cursor.execute(query)
-
-        return self.fill_table(file_name, table_data)
-
-    def fill_table(self, file_name, table_data):
-        # Verifying no SQL injection can be performed here
-        unchecked_input = file_name, table_data
-        input_check = self.validate_args(unchecked_input)
-
-        if input_check is False:
-            return {"error": f"Can't update a table - input is invalid"}
-        cursor = self.cursor
-
-        # Filling the table
-        for row in table_data:
-            inserted_values = "', '".join(row)
-            query = f"insert into {file_name} values ('{inserted_values}');"
-            logging.info(f"Executing query |{query}|")
-            cursor.execute(query)
-
-        return {"response": "DB was successfully updated"}
-
-    def create_table_from_scratch(self, file_name, column_names, table_data):
-        # Verifying no SQL injection can be performed here
-        unchecked_input = file_name, column_names, table_data
-        input_check = self.validate_args(unchecked_input)
-
-        if input_check is False:
-            return {"error": f"Can't create a new table - input is invalid"}
-
-        cursor = self.cursor
-        cursor.execute('show tables')
-        tups = cursor.fetchall()
-
-        tables = [tup[0] for tup in tups]
-
-        # Creating new table to store the file content if not exist.
+        # Verifying the table exist - if it doesn't creating a new table from scratch
         if file_name not in tables:
-            logging.info(f"{file_name} table is missing! Creating the {file_name} table")
+            logging.warning(f"Table {file_name} does not exists in DB - can't update or overwrite")
+            return self.create_table_from_scratch(file_name, column_names, table_data)
 
-            added_columns = " varchar(255),".join(column_names)
-            query = f"CREATE TABLE {file_name} ({added_columns} " + "varchar(255)" + ");"
-            logging.info(f"Executing query |{query}|")
+        metadata = db.MetaData()
 
-            # Handling invalid input if provided.
-            try:
-                cursor.execute(query)
-            except pymysql.err.ProgrammingError as e:
-                logging.warning(f"Failed to create a table, query: {query}, error: {e}")
-                return {"error": f"Can't create a new table - input is invalid"}
+        # Creating table - column names are provided in a tuple
+        columns_list = [db.Column(x, db.String(255)) for x in column_names]
 
-        else:
-            return {"error": f"Can't create a new table - table with name {file_name} already exists"}
-
-        return self.fill_table(file_name, table_data)
-
-    def add_data_existing_table(self, file_name, column_names, table_data):
-        # Verifying no SQL injection can be performed here
-        unchecked_input = file_name, column_names, table_data
-        input_check = self.validate_args(unchecked_input)
-
-        if input_check is False:
-            return {"error": f"Can't update a table - input is invalid"}
-
-        cursor = self.cursor
-
-        # Verifying provided column names against current column names.
-        columns_to_add = self.columns_verification(self.get_columns(file_name), column_names)
-
-        # Provided column names don't contain the current table columns or their order is different.
-        if columns_to_add is False:
-            return {"error": "The original table columns can't be removed/replaced and their order can't be modified."}
-
-        # New columns are to be added to the table
-        elif isinstance(columns_to_add, list):
-            for new_column_name in columns_to_add:
-                query = f"ALTER TABLE {file_name} ADD COLUMN {new_column_name} varchar(255)"
-
-                # Handling invalid input if provided.
-                try:
-                    cursor.execute(query)
-                except pymysql.err.ProgrammingError as e:
-                    print(f"Failed to update a table - {e}")
-                    return {"error": f"Can't update the table - input is invalid"}
+        # SQL Alchemy table instance is passed to the "fill_table" method
+        table_emp = db.Table(file_name, metadata, *columns_list, extend_existing=True)
+        metadata.drop_all(self.engine)
+        metadata.create_all(self.engine)
 
         logging.info(f"{file_name} - table with such name already exists.")
         logging.info(f"Log: Table data - {table_data}")
 
-        return self.fill_table(file_name, table_data)
+        return self.fill_table(file_name, table_data, table_emp, column_names)
+
+    def fill_table(self, file_name, table_data, table_emp, column_names):
+        """
+         This method can be used to fill a table with data
+        :param file_name:  Table name, str
+        :param table_data: a list - each element will become a record in the table
+        :param table_emp: Sql alchemy instance that represents the table
+        :param column_names: Table columns list
+        :return:
+        """
+
+        logging.info(f"Executer: Filling the table '{file_name}' with data")
+
+        added_values = []
+
+        for row in table_data:
+            element = {}
+            for column_number in range(0, len(column_names)):
+                element[column_names[column_number]] = row[column_number]
+
+            added_values.append(element)
+
+        query = table_emp.insert().values([*added_values])
+        self.cursor.execute(query)
+
+        return {"response": "DB was successfully updated"}
+
+    def create_table_from_scratch(self, file_name, column_names, table_data):
+        """
+        This method can be used to create a new SQL table from scratch.
+        :param file_name: Table name, str
+        :param column_names: Table columns list
+        :param table_data: table data, list - each element will become a record in the table
+        :return: dict (confirmation message or error message)
+        """
+
+        logging.info(f"Executer: Creating a new table from scratch -  '{file_name}'")
+        tables = self.engine.table_names()
+
+        # Creating new table to store the file content if not exist.
+        if file_name not in tables:
+            logging.info(f"{file_name} table is missing! Creating the {file_name} table")
+            metadata = db.MetaData()
+
+            # Creating table - column names are provided in a tuple
+            columns_list = [db.Column(x, db.String(255)) for x in column_names]
+
+            # SQL Alchemy table instance is passed to the "fill_table" method
+            table_emp = db.Table(file_name, metadata, *columns_list, extend_existing=True)
+            metadata.create_all(self.engine)
+
+        else:
+            return {"error": f"Can't create a new table - table with name {file_name} already exists"}
+
+        return self.fill_table(file_name, table_data, table_emp, column_names)
+
+    def add_data_existing_table(self, file_name, column_names, table_data):
+        """
+        This method can be used to add records to an existing table. Added record must match the table structure.
+        :param file_name: Table name, str
+        :param column_names: Table columns, list
+        :param table_data: Records that should be added, list or tuple
+        :return: dict (confirmation message)
+        """
+
+        logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
+
+        # Validating input
+        if isinstance(self.validating_record_before_adding(file_name, column_names, table_data), dict):
+            return self.validating_record_before_adding(file_name, column_names, table_data)
+
+        # Inserting the records
+        metadata = db.MetaData()
+        updated_table = db.Table(file_name, metadata, autoload=True, autoload_with=self.engine)
+
+        added_values = []
+
+        for row in table_data:
+            element = {}
+            for column_number in range(0, len(column_names)):
+                element[column_names[column_number]] = row[column_number]
+
+            added_values.append(element)
+
+        query = updated_table.insert().values([*added_values])
+        self.cursor.execute(query)
+
+        return {"response": f"DB table {file_name} was successfully updated"}
+
+    def validating_record_before_adding(self, file_name, column_names, table_data):
+        """
+         This method is used to verify that the provided record can be added to the given table.
+         The table must exist in the DB.
+         The columns amount in the record must be identical to the columns amount in the table
+        :param file_name: table name, str
+        :param column_names: columns list, list
+        :param table_data: , added record (list or tuple)
+        :return: error message (dict) on error
+        """
+
+        tables = self.engine.table_names()
+
+        # Verifying the table exist - if it doesn't it can't be updated
+        if file_name not in tables:
+            logging.warning(f"Table {file_name} does not exists in DB - can't update or overwrite")
+            return {"error": f"Table {file_name} does not exists in DB - can't update or overwrite"}
+
+        table_columns_amount = len(column_names)
+
+        # Validating provided column names
+        table_columns = self.get_columns(file_name)
+        if table_columns != column_names:
+            logging.error(f"Table columns: {table_columns}, provided column names: {column_names}")
+            return {"error": "The original table columns can't be removed or replaced"}
+
+        # Verifying the provided data can be inserted into the table
+        for record in table_data:
+            if len(record) != table_columns_amount:
+                return {"error": "Column count doesn't match value count"}
 
     def get_columns(self, table):
         """
         Get Table Column Names
         :param table: table name, String
-        :return: list
+        :return: list of columns
         """
-        cursor = self.cursor
-        query = 'show columns from ''%s'';' % table
-        cursor.execute(query)
-        columns = cursor.fetchall()
-        result = []
+        metadata = db.MetaData()
+        table_ = db.Table(table, metadata, autoload=True, autoload_with=self.engine)
 
-        for cl in columns:
-            result.append(cl[0])
-
-        return result
+        return table_.columns.keys()
 
     def get_table_content(self, table):
         """
@@ -235,56 +273,60 @@ class Executer(object):
         :param table: table name, String
         :return: tuple
         """
-        # Verifying no SQL injection can be performed here
-        unchecked_input = table
-        input_check = self.validate_args(unchecked_input)
+        metadata = db.MetaData()
+        table_ = db.Table(table, metadata, autoload=True, autoload_with=self.engine)
 
-        if input_check is False:
-            return {"error": f"Can't provide table content - input is invalid"}
+        query = db.select([table_])
+        ResultProxy = self.cursor.execute(query)
+        result = ResultProxy.fetchall()
 
-        cursor = self.cursor
-        query = f'select * from {table};'
-        cursor.execute(query)
-        result = cursor.fetchall()
         return result
 
-    def columns_verification(self, existing_columns: list, new_columns: list):
-        """
-        Checks for the difference between current and suggested table columns.
-        :param existing_columns: list
-        :param new_columns: list
-        :return: list
-        """
-        if len(existing_columns) > len(new_columns):
-            return False
 
-        for i in range(len(existing_columns)):
-            if existing_columns[i] != new_columns[i]:
-                return False
-
-        if len(new_columns) > len(existing_columns):
-            return new_columns[len(existing_columns):]
-
-        return True
 
 
 if __name__ == "__main__":
+    pass
 
-    mplanet = 'Mars'
 
-    direction = 'Down'
-    bars = 760
+    # executer = Executer("./config.ini")
+    #
+    # a = ['workers', ['name', 'ID', 'title'], [['Anna0x00', '352', 'Designer'], ['Boris', '451', 'Front-end Developer']]]
+    # print(executer.validate_args(a))
 
-    executer = Executer("./config.ini")
-    # query = "select * from planets where Planet = %(mplanet)s;"
-    # executer.cursor.execute(query,{'mplanet': mplanet})
-    # print(executer.cursor.fetchall())
+    # file_name = '"; select true;"'
+    # column_names = ("car", "speed", "location")
+    # table_data = (('Volvo', '110', 'Rishon Le Zion'), ('Hammer', '130', 'Berlin'), ('Kia', '80', 'Kiev'))
+    #
+    # #print(executer.validate_args([file_name, column_names, table_data]))
+    #
+    # # Creating from scratch and filling SQL table
+    # print(executer.create_table_from_scratch(file_name, column_names, table_data))
+    # added_data = (('Nissan', '80', 'New York'),)
+    #
+    #
+    # # Adding record to an existing table
+    # added_data_ = (('Nissan', '80', 'New York'), ('Subaru', '98', 'New York'))
+    # print(executer.add_data_existing_table(file_name, column_names, added_data_))
 
-    print(executer.validate_args(['ff', 'aa', 'og']))
 
-    # query = "select * from moderate where Moves = %s and Bars = %s;"
-    # executer.cursor.execute(query, (direction, bars))
-    # print(executer.cursor.fetchall())
+
+
+    # # Adding columns to an existing table: added column "condition"
+    #column_names = ("car", "speed", "location", "condition")
+    # table_data_updated = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
+    # print(executer.add_data_existing_table(file_name, column_names, table_data_updated))
+    #
+    # # Get table columns as list
+    # columns = executer.get_columns(file_name)
+    # print(columns)
+    #
+    # # Overwriting an existing table
+    # table_data_updated_ = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Good"))
+    # print(executer.overwrite_table(file_name, column_names, table_data_updated_))
+    #
+    # # Getting table content
+    # print(executer.get_table_content('cars'))
 
 
 
