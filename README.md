@@ -130,9 +130,17 @@ The tests cover all major user flows plus negative testing.
 The tests are written in Python, PyTest framework is used. 
 
 Test files can be runned with the following cmd commands (from 'tests' folder):
-- >pytest test_json_upload_download.py
-- >pytest test_supported extensions.py
-- >pytest test_json_upload_xslx_files.py
+- >pytest test_creating_table_with_blank_cells.py
+- >pytest test_getting_table_as_json.py
+- >pytest test_json_record_addition.py
+- >pytest test_json_table_creation.py
+- >pytest test_json_table_overwriting.py
+- >pytest test_supporting_csv.py
+- >pytest test_supporting_xlsx.py
+- >pytest test_xlsx_creating_table.py
+- >pytest test_xlsx_record_addition.py
+- >pytest test_xlsx_table_overwriting.py
+- >pytest test_xlsx_table_with_blank_cells.py
 
 Please note: Make sure MySQL server is up before running the tests.
 
