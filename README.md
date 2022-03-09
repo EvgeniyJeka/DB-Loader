@@ -141,6 +141,7 @@ Test files can be runned with the following cmd commands (from 'tests' folder):
 - >pytest test_xlsx_record_addition.py
 - >pytest test_xlsx_table_overwriting.py
 - >pytest test_xlsx_table_with_blank_cells.py
+- >pytest test_xls_creating_table.py
 
 Please note: Make sure MySQL server is up before running the tests.
 
