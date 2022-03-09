@@ -34,7 +34,6 @@ class Executer(object):
         except TypeError:
             logging.critical("SQL DB - Failed to connect, please verify SQL DB container is running")
 
-
     # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
         """
@@ -291,39 +290,14 @@ class Executer(object):
 
 
 
-if __name__ == "__main__":
-
-    executer = Executer("./config.ini")
-    #
-    file_name = 'cars'
-    column_names = ("car", "speed", "location", "condition")
-    table_data = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
-    # Creating from scratch and filling SQL table
-    print(executer.create_table_from_scratch(file_name, column_names, table_data))
-
-
-    # # Adding record to an existing table
-    # added_data_ = (('Nissan', '80', 'New York'), ('Subaru', '98', 'New York'))
-    # print(executer.add_data_existing_table(file_name, column_names, added_data_))
+# if __name__ == "__main__":
+#     pass
+#
+#     #executer = Executer("./config.ini")
 
 
 
 
-    # # Adding columns to an existing table: added column "condition"
-    #column_names = ("car", "speed", "location", "condition")
-    # table_data_updated = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
-    # print(executer.add_data_existing_table(file_name, column_names, table_data_updated))
-    #
-    # # Get table columns as list
-    # columns = executer.get_columns(file_name)
-    # print(columns)
-    #
-    # # Overwriting an existing table
-    # table_data_updated_ = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Good"))
-    # print(executer.overwrite_table(file_name, column_names, table_data_updated_))
-    #
-    # # Getting table content
-    # print(executer.get_table_content('cars'))
 
 
 
