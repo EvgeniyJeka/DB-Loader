@@ -1,5 +1,4 @@
-import time
-
+import logging
 import pytest
 from Executer import Executer
 import requests
@@ -61,13 +60,20 @@ def create_workers_test_table(content):
 def remove_table(request):
     table_name = request.param[0]
 
-    tables = executer.engine.table_names()
-
-    if table_name in tables:
+    try:
         metadata = db.MetaData()
-        db.Table(table_name, metadata, autoload=True, autoload_with=executer.engine)
-        metadata.drop_all(executer.engine)
+        metadata.reflect(bind=executer.engine)
+        tables = metadata.tables.keys()
 
+        if table_name in tables:
+            executer_ = Executer("./config.ini")
+            metadata = db.MetaData()
+            db.Table(table_name, metadata, autoload_replace=True, autoload_with=executer_.engine)
+            metadata.drop_all(executer.engine)
+
+    except AttributeError as e:
+        logging.error(f"Verify Postgres DB is available - {e}")
+        raise e
 
 
 @pytest.fixture(scope="class")
@@ -83,7 +89,7 @@ def prepare_table(request):
     try:
         response = requests.post(url, files=files)
         response_parsed = json.loads(response.content)
-        print(response_parsed)
+        logging.info(response_parsed)
         assert response_parsed['response'] == 'DB was successfully updated'
 
     except json.decoder.JSONDecodeError as e:
@@ -92,6 +98,7 @@ def prepare_table(request):
 
     finally:
         fin.close()
+
 
 @pytest.fixture(scope= "function")
 def create_worker():
@@ -103,6 +110,7 @@ def create_worker():
 
     return worker_4
 
+
 @pytest.fixture(scope= "function")
 def worker_invalid_column_name():
     # Creating new row to be inserted to the table.
@@ -113,12 +121,11 @@ def worker_invalid_column_name():
 
     return worker_4
 
+
 @pytest.fixture(scope= "function")
 def worker_column_missing():
     # Creating new row to be inserted to the table.
-    worker_5 = {}
-    worker_5["name"] = f"John_{random.randint(1,1000)}"
-    worker_5["ID"] = str(random.randint(1,1000))
+    worker_5 = {"name": f"John_{random.randint(1, 1000)}", "ID": str(random.randint(1, 1000))}
 
     return worker_5
 
@@ -210,7 +217,9 @@ class TestTools(object):
     def table_in_db(table_name):
         # executer.cursor.execute('show tables')
         # tups = executer.cursor.fetchall()
-        tables =  executer.engine.table_names()
+        metadata = db.MetaData()
+        metadata.reflect(bind=executer.engine)
+        tables = metadata.tables.keys()
 
         if table_name in tables:
             return True

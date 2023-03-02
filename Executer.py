@@ -2,10 +2,10 @@ import configparser
 import logging
 
 import sqlalchemy
-from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 import sqlalchemy as db
 from sqlalchemy import exc
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
 
 
 class Executer(object):
@@ -34,8 +34,6 @@ class Executer(object):
         except TypeError:
             logging.critical("SQL DB - Failed to connect, please verify SQL DB container is running")
 
-
-    # Connect to DB
     def connect_me(self, hst, usr, pwd, db_name):
         """
         This method is used to establish a connection to MySQL DB.
@@ -51,10 +49,9 @@ class Executer(object):
         try:
 
             url = f'postgresql+psycopg2://{usr}:{pwd}@{hst}:5432/{db_name}'
-            #engine = create_engine('postgresql+psycopg2://scott:tiger@localhost/mydatabase')
 
             # Create an engine object.
-            engine = create_engine(url, echo=True)
+            engine = create_engine(url, echo=False, isolation_level="AUTOCOMMIT")
 
             # Create database if it does not exist.
             if not database_exists(engine.url):
@@ -121,7 +118,10 @@ class Executer(object):
         """
 
         logging.info(f"Executer: Adding data to an existing table - '{file_name}'")
-        tables = self.engine.table_names()
+
+        metadata = MetaData()
+        metadata.reflect(bind=self.engine)
+        tables = metadata.tables.keys()
 
         # Verifying the table exist - if it doesn't creating a new table from scratch
         if file_name not in tables:
@@ -179,7 +179,10 @@ class Executer(object):
         """
 
         logging.info(f"Executer: Creating a new table from scratch -  '{file_name}'")
-        tables = self.engine.table_names()
+
+        metadata = MetaData()
+        metadata.reflect(bind=self.engine)
+        tables = metadata.tables.keys()
 
         # Creating new table to store the file content if not exist.
         if file_name not in tables:
@@ -242,7 +245,9 @@ class Executer(object):
         :return: error message (dict) on error
         """
 
-        tables = self.engine.table_names()
+        metadata = MetaData()
+        metadata.reflect(bind=self.engine)
+        tables = metadata.tables.keys()
 
         # Verifying the table exist - if it doesn't it can't be updated
         if file_name not in tables:
@@ -269,7 +274,7 @@ class Executer(object):
         :return: list of columns
         """
         metadata = db.MetaData()
-        table_ = db.Table(table, metadata, autoload=True, autoload_with=self.engine)
+        table_ = db.Table(table, metadata, autoload_replace=True, autoload_with=self.engine)
 
         return table_.columns.keys()
 
@@ -280,9 +285,9 @@ class Executer(object):
         :return: tuple
         """
         metadata = db.MetaData()
-        table_ = db.Table(table, metadata, autoload=True, autoload_with=self.engine)
+        table_ = db.Table(table, metadata, autoload_replace=True, autoload_with=self.engine)
 
-        query = db.select([table_])
+        query = db.select(table_)
         ResultProxy = self.cursor.execute(query)
         result = ResultProxy.fetchall()
 
@@ -291,15 +296,34 @@ class Executer(object):
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+#
+#     executer = Executer("./config.ini")
+#
+#     metadata = MetaData()
+#
+#     #executer.create_table_from_scratch('my_table', ('id','name','age'), ())
+#
+#     my_table = Table('my_table', metadata,
+#                      Column('id', Integer, primary_key=True),
+#                      Column('name', String),
+#                      Column('age', Integer)
+#                      )
+#
+#     insert_stmt = my_table.insert().values(id=6, name='John', age=32)
+#
+#     conn = executer.engine.connect()
+#     conn.execute(insert_stmt)
+#     #conn.commit()
+#     conn.close()
 
-    executer = Executer("./config.ini")
     #
-    file_name = 'cars'
-    column_names = ("car", "speed", "location", "condition")
-    table_data = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
-    # Creating from scratch and filling SQL table
-    print(executer.create_table_from_scratch(file_name, column_names, table_data))
+    # file_name = 'cars'
+    # column_names = ("car", "speed", "location", "condition")
+    # table_data = (('Volvo', '110', 'Rishon Le Zion', "OK"), ('Hammer', '130', 'Berlin', "Good"), ('Kia', '80', 'Kiev', "Broken"))
+    # # Creating from scratch and filling SQL table
+    # #print(executer.create_table_from_scratch(file_name, column_names, table_data))
+
 
 
     # # Adding record to an existing table
