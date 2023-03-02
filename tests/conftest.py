@@ -177,6 +177,13 @@ def table_add_data_expected_result(request):
 class TestTools(object):
 
     @staticmethod
+    def get_tables_list():
+        metadata = db.MetaData()
+        metadata.reflect(bind=executer.engine)
+        tables = metadata.tables.keys()
+        return tables
+
+    @staticmethod
     def get_excel_file_content(path):
 
         # Getting the content of excel file

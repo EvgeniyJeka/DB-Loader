@@ -85,7 +85,7 @@ class TestFileUpload(object):
         print(f"-----------------Test: '{test_name}'-----------------")
 
         # Removing the 'cities_test' table
-        tables = self.executer.engine.table_names()
+        tables = TestTools.get_tables_list()
         if 'cities_test' in tables:
             self.executer.cursor.execute("drop table cities_test")
 

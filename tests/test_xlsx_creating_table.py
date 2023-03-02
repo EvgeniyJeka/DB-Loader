@@ -88,7 +88,7 @@ class TestFileUpload(object):
         url = base_url + "add_file/create"
 
         # Creating the 'cities_test' table (if not exists)
-        tables = self.executer.engine.table_names()
+        tables = TestTools.get_tables_list()
         if 'cities_test' not in tables:
             create_workers_test_table(create_cities_test_table)
 

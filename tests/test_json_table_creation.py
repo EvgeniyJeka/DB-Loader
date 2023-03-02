@@ -79,7 +79,7 @@ class TestJsonUpload(object):
         url = base_url + "add_json/create"
 
         # Creating the 'workers' table
-        tables = self.executer.engine.table_names()
+        tables = TestTools.get_tables_list()
         if 'workers' not in tables:
             create_workers_test_table(workers_json_valid_content)
 
