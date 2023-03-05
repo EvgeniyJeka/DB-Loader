@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools, create_workers_test_table, create_cities_test_table
-import configparser
+import configparser, logging
 
 config = configparser.ConfigParser()
 config.read("./config.ini")
@@ -20,7 +20,7 @@ class TestFileUpload(object):
         :param remove_table: fixture used to remove a table from DB
         """
         test_name = "Create new table from xlsx file"
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/create"
 
@@ -37,7 +37,7 @@ class TestFileUpload(object):
         finally:
             fin.close()
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     @pytest.mark.parametrize("remove_table", [["cities_test"]], indirect=True)
     def test_uploaded_table_content(self, remove_table):
@@ -46,7 +46,7 @@ class TestFileUpload(object):
 
         """
         test_name = "SQL DB content is identical to uploaded file content - XLSX extension."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/create"
 
@@ -75,7 +75,7 @@ class TestFileUpload(object):
         assert db_table_columns == excel_file_content["table_headers"], "Error - wrong column names."
         assert db_table_content == excel_file_content["table_content"], "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 
     def test_table_created_negative(self):
         """
@@ -83,7 +83,7 @@ class TestFileUpload(object):
 
         """
         test_name = "Error message is received when a table with such name already exists"
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/create"
 
@@ -106,7 +106,7 @@ class TestFileUpload(object):
         finally:
             fin.close()
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 
     @pytest.mark.parametrize("remove_table", [["invalid_table"]], indirect=True)
     def test_create_invalid_table(self, remove_table):
@@ -115,7 +115,7 @@ class TestFileUpload(object):
         :param remove_table: fixture used to set precondition.
         """
         test_name = "Create table - sending file with invalid content, more columns than column names."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/create"
 
@@ -134,4 +134,4 @@ class TestFileUpload(object):
         finally:
             fin.close()
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")

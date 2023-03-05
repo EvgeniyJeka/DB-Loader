@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools
-import configparser
+import configparser, logging
 
 config = configparser.ConfigParser()
 config.read("./config.ini")
@@ -20,7 +20,7 @@ class TestFileUpload(object):
         :param remove_table: fixture used to set precondition.
         """
         test_name = "Overwriting non-existing table, verifying content."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/overwrite"
         fin = open('./test_files/overwrite_1/cities_test.xlsx', 'rb')
@@ -50,4 +50,4 @@ class TestFileUpload(object):
         assert db_table_columns == excel_file_content["table_headers"], "Error - wrong column names."
         assert db_table_content == excel_file_content["table_content"], "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")

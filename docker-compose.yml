@@ -19,16 +19,16 @@ services:
     networks:
       - sql_net
 
-  db_loader:
-    image: db_loader_net:latest
-    build: ./
-    restart: always
-    ports:
-      - "5000:5000"
-    depends_on:
-     - postgres
-    networks:
-      - sql_net
+#  db_loader:
+#    image: db_loader_net:latest
+#    build: ./
+#    restart: always
+#    ports:
+#      - "5000:5000"
+#    depends_on:
+#     - postgres
+#    networks:
+#      - sql_net
 
 volumes:
   db:

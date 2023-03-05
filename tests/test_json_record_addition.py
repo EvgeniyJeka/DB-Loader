@@ -2,8 +2,7 @@ import pytest
 import requests
 import json, logging
 from Executer import Executer
-from tests.conftest import TestTools, workers_json_valid_content, workers_single_worker_content, \
-    workers_json_overwritten_content, create_workers_test_table
+from tests.conftest import TestTools, workers_json_valid_content, create_workers_test_table
 import configparser
 
 
@@ -54,7 +53,7 @@ class TestJsonUpload(object):
         # Verifying uploaded content
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 
     def test_add_data_negative_json_column_renamed(self, worker_invalid_column_name):
         """
@@ -62,7 +61,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "Adding new record to an existing table: existing columns can't be renamed - negative test."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Creating the 'workers' table
         tables = TestTools.get_tables_list()
@@ -79,7 +78,7 @@ class TestJsonUpload(object):
 
         assert response_parsed['error'] == "The original table columns can't be removed or replaced"
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     def test_add_data_negative_json_column_removed(self, worker_column_missing):
         """
@@ -87,7 +86,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "Adding new record to an existing table: existing columns can't be removed - negative test."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Creating the 'workers' table
         tables = TestTools.get_tables_list()
@@ -104,7 +103,7 @@ class TestJsonUpload(object):
 
         assert response_parsed['error'] == "The original table columns can't be removed or replaced"
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     def test_add_data_negative_json_column_added(self, worker_column_added):
         """
@@ -112,7 +111,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "Adding new record to an existing table: new columns can't be added  - negative test."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Creating the 'workers' table
         tables = TestTools.get_tables_list()
@@ -129,5 +128,5 @@ class TestJsonUpload(object):
 
         assert response_parsed['error'] == "The original table columns can't be removed or replaced"
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 

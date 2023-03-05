@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools
-import configparser
+import configparser, logging
 
 
 config = configparser.ConfigParser()
@@ -21,7 +21,7 @@ class TestSupportedExtensions(object):
 
         """
         test_name = "Verifying csv files content is successfully uploaded to MySQL DB."
-        print(f"\n-----------------Test: '{test_name}'-----------------")
+        logging.info(f"\n-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/create"
 
@@ -50,5 +50,5 @@ class TestSupportedExtensions(object):
         assert db_table_columns == csv_file_content["headers"], "Error - wrong column names."
         assert db_table_content == csv_file_content["content"], "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 

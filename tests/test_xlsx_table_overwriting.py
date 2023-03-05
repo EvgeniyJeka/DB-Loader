@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools
-import configparser
+import configparser, logging
 
 config = configparser.ConfigParser()
 config.read("./config.ini")
@@ -21,7 +21,7 @@ class TestFileUpload(object):
 
         """
         test_name = "Overwrite an existing table by sending xlsx file"
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/overwrite"
         fin = open('./test_files/overwrite_1/cities_test.xlsx', 'rb')
@@ -37,7 +37,7 @@ class TestFileUpload(object):
         finally:
             fin.close()
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']], indirect=True)
     def test_verify_content_overwritten_table(self, prepare_table):
@@ -46,7 +46,7 @@ class TestFileUpload(object):
 
         """
         test_name = "Verify table content after it was overwritten."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_file/overwrite"
         fin = open('./test_files/overwrite_1/cities_test.xlsx', 'rb')
@@ -74,5 +74,5 @@ class TestFileUpload(object):
         assert db_table_columns == excel_file_content["table_headers"], "Error - wrong column names."
         assert db_table_content == excel_file_content["table_content"], "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 

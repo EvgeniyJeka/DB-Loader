@@ -2,7 +2,7 @@ import pytest
 import requests
 import json
 from Executer import Executer
-from tests.conftest import TestTools, workers_json_valid_content, create_workers_test_table
+import logging
 import configparser
 
 
@@ -22,7 +22,7 @@ class TestJsonUpload(object):
         :param remove_table: fixture used to remove the "workers" table if exists.
         """
         test_name = "Verifying table with blank cells is created and it's content is saved."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Creating new table that contains "null" values and empty strings.
         create_worker["title"] = None

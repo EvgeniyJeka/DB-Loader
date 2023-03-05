@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools
-import configparser
+import configparser, logging
 
 
 config = configparser.ConfigParser()
@@ -22,7 +22,7 @@ class TestSupportedExtensions(object):
 
         """
         test_name = "Verifying xls files content is successfully uploaded to MySQL DB."
-        print(f"\n-----------------Test: '{test_name}'-----------------")
+        logging.info(f"\n-----------------Test: '{test_name}'-----------------")
         url = base_url + "add_file/create"
 
         fin = open('./test_files/planets.xls', 'rb')
@@ -49,4 +49,4 @@ class TestSupportedExtensions(object):
         # Verifying uploaded content
         assert db_table_columns == xls_file_content["table_headers"], "Error - wrong column names."
         assert db_table_content == xls_file_content["table_content"], "Error - table content doesn't match."
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
