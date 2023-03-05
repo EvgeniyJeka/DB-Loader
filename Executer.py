@@ -218,7 +218,7 @@ class Executer(object):
 
         # Inserting the records
         metadata = db.MetaData()
-        updated_table = db.Table(file_name, metadata, autoload=True, autoload_with=self.engine)
+        updated_table = db.Table(file_name, metadata, autoload_replace=True, autoload_with=self.engine)
 
         added_values = []
 
