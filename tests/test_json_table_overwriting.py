@@ -2,9 +2,8 @@ import pytest
 import requests
 import json
 from Executer import Executer
-from tests.conftest import TestTools, workers_json_valid_content, workers_single_worker_content, \
-    workers_json_overwritten_content, create_workers_test_table
-import configparser
+from tests.conftest import  workers_json_valid_content, workers_json_overwritten_content, create_workers_test_table
+import configparser, logging
 
 config = configparser.ConfigParser()
 config.read("../config.ini")
@@ -23,7 +22,7 @@ class TestJsonUpload(object):
         """
 
         test_name = "Overwrite an existing table by sending JSON."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_json/overwrite"
 
@@ -39,7 +38,7 @@ class TestJsonUpload(object):
         assert 'response' in response_parsed.keys(), "Error - failed to get confirmation from the server."
         assert response_parsed['response'] == 'DB was successfully updated'
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
         # Overwrite an existing table by sending JSON with the same name
 
@@ -50,7 +49,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "Verify table content after it was overwritten."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_json/overwrite"
 
@@ -81,4 +80,4 @@ class TestJsonUpload(object):
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")

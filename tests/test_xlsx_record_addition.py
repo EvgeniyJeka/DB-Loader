@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import add_records_xlsx_files_expected_result
-import configparser
+import configparser, logging
 
 config = configparser.ConfigParser()
 config.read("./config.ini")
@@ -22,7 +22,7 @@ class TestFileUpload(object):
 
         """
         test_name = "Adding several records  to an existing table, verifying table content was updated.."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Updating the table via service method
         url = base_url + "add_file/add_data"
@@ -46,7 +46,7 @@ class TestFileUpload(object):
         assert db_table_content == add_records_xlsx_files_expected_result, \
             "Table content wasn't updated as expected."
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     @pytest.mark.parametrize("prepare_table", [['./test_files/overwrite_1/cities_test.xlsx']], indirect=True)
     def test_add_data_negative(self, prepare_table):
@@ -55,7 +55,7 @@ class TestFileUpload(object):
 
         """
         test_name = "Adding a row and a column to existing table - negative test."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Data addition can't be performed, since the new table in the xlsx file has a different structure.
         url = base_url + "add_file/add_data"
@@ -73,4 +73,4 @@ class TestFileUpload(object):
         finally:
             fin.close()
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
