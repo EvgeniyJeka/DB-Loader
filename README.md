@@ -123,6 +123,7 @@ domain to "config.ini" file.
 
 3. Run the file "Gateway.py"  to activate the service.  
 
+
 # Tests
 
 Automated API tests are placed in "tests" folder.
