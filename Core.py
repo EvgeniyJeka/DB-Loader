@@ -118,9 +118,9 @@ class Core(object):
 
                 return result
 
-        except (IndexError, TypeError, AttributeError):
-            logging.warning(f"Data is missing or corrupted in provided JSON object. Can't fill the table.")
-            return {"error": "Log: Data is missing or corrupted in provided JSON object. Can't fill the table."}
+        except (IndexError, TypeError, AttributeError) as e:
+            logging.warning(f"Data is missing or corrupted in provided JSON object. Can't fill the table: {e}")
+            return {"error": "Log: Data is missing or corrupted in provided JSON object. Can't fill the table"}
 
         except KeyError as e:
             logging.warning(f"Error - the key {e} is missing in one of the JSON objects in the list.")

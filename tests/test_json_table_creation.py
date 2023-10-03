@@ -3,7 +3,7 @@ import requests
 import json
 from Executer import Executer
 from tests.conftest import TestTools, workers_json_valid_content, create_workers_test_table
-import configparser
+import configparser, logging
 
 
 config = configparser.ConfigParser()
@@ -22,7 +22,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "Verify confirmation is received on table successful creation. Sending JSON."
-        print(f"\n-----------------Test: '{test_name}'-----------------")
+        logging.info(f"\n-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_json/create"
 
@@ -35,7 +35,7 @@ class TestJsonUpload(object):
         assert response_parsed['response'] == 'DB was successfully updated'
         assert TestTools.table_in_db("workers") is True, "Error - table wasn't created."
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
     @pytest.mark.parametrize("remove_table", [["workers"]], indirect=True)
     def test_uploaded_table_content_json(self, remove_table):
@@ -44,7 +44,7 @@ class TestJsonUpload(object):
 
         """
         test_name = "SQL DB content is identical to uploaded JSON content - XLSX extension."
-        print(f"-----------------Test: '{test_name}'-----------------")
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         create_workers_test_table(workers_json_valid_content)
 
@@ -65,7 +65,7 @@ class TestJsonUpload(object):
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
 
-        print(f"-----------------Test '{test_name}'' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}'' passed-----------------\n")
 
     def test_table_created_negative_json(self):
         """
@@ -74,12 +74,12 @@ class TestJsonUpload(object):
 
         """
         test_name = "Error message is received when a table with such name already exists. Sending JSON."
-        print(f"\n-----------------Test: '{test_name}'-----------------")
+        logging.info(f"\n-----------------Test: '{test_name}'-----------------")
 
         url = base_url + "add_json/create"
 
         # Creating the 'workers' table
-        tables = self.executer.engine.table_names()
+        tables = TestTools.get_tables_list()
         if 'workers' not in tables:
             create_workers_test_table(workers_json_valid_content)
 
@@ -91,7 +91,7 @@ class TestJsonUpload(object):
         assert response_parsed['error'] == \
                "Can't create a new table - table with name workers already exists"
 
-        print(f"-----------------Test '{test_name}' passed-----------------\n")
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
 
 

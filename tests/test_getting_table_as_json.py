@@ -2,8 +2,7 @@ import pytest
 import requests
 import json
 from Executer import Executer
-from tests.conftest import TestTools, workers_json_valid_content, workers_single_worker_content, \
-    workers_json_overwritten_content, create_workers_test_table
+import logging
 import configparser
 
 
@@ -18,6 +17,9 @@ class TestJsonDownload(object):
     # Download table content as JSON, verify against DB table.
     @pytest.mark.parametrize("prepare_table", [['./test_files/cities_test.xlsx']],indirect=True)
     def test_table_as_json(self, prepare_table):
+
+        test_name = "Getting DB table content as JSON"
+        logging.info(f"-----------------Test: '{test_name}'-----------------")
 
         # Sending the request
         url = base_url + "table_to_json/cities_test"
@@ -39,6 +41,8 @@ class TestJsonDownload(object):
 
         assert db_table_columns == uploaded_json_keys[0], "Error - wrong column names."
         assert db_table_content == uploaded_json_values, "Error - table content doesn't match."
+
+        logging.info(f"-----------------Test '{test_name}' passed-----------------\n")
 
 
 
